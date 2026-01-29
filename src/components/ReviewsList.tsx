@@ -13,6 +13,7 @@ interface Review {
   affiliate_link: string;
   category: string;
   created_at: string;
+  slug: string;
 }
 
 export const ReviewsList: React.FC = () => {
@@ -83,7 +84,7 @@ export const ReviewsList: React.FC = () => {
             summary={review.summary || ''}
             price={review.price || ''}
             affiliateLink={review.affiliate_link}
-            detailLink={`/reviews/view?id=${review.id}`}
+            detailLink={review.slug ? `/reviews/${review.slug}` : `/reviews/view?id=${review.id}`}
           />
         ))}
       </div>
