@@ -1,4 +1,4 @@
--- Create profiles table
+-- 1. Create profiles table (Standard Supabase Auth profile)
 CREATE TABLE public.profiles (
   id UUID REFERENCES auth.users(id) ON DELETE CASCADE PRIMARY KEY,
   email TEXT UNIQUE NOT NULL,
@@ -7,10 +7,10 @@ CREATE TABLE public.profiles (
   updated_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now())
 );
 
--- Enable Row Level Security (RLS) for profiles
+-- Enable RLS for profiles
 ALTER TABLE public.profiles ENABLE ROW LEVEL SECURITY;
 
--- Create policies for profiles
+-- Policies for profiles
 CREATE POLICY "Public profiles are viewable by everyone." ON public.profiles
   FOR SELECT USING (true);
 
@@ -20,15 +20,18 @@ CREATE POLICY "Users can insert their own profile." ON public.profiles
 CREATE POLICY "Users can update own profile." ON public.profiles
   FOR UPDATE USING (auth.uid() = id);
 
--- Create reviews table
+-- 2. Create reviews table (English column names matching code)
 CREATE TABLE public.reviews (
   id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
   title TEXT NOT NULL,
   content TEXT NOT NULL,
-  specs_tecnicas JSONB DEFAULT '{}'::jsonb,
-  nota NUMERIC(3, 1) CHECK (nota >= 0 AND nota <= 10),
-  link_afiliado TEXT,
-  imagem_url TEXT,
+  rating NUMERIC(3, 1) CHECK (rating >= 0 AND rating <= 10),
+  affiliate_link TEXT,
+  image_url TEXT,
+  specs JSONB DEFAULT '{}'::jsonb,
+  summary TEXT,
+  price TEXT,
+  category TEXT,
   author_id UUID REFERENCES public.profiles(id),
   created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()),
   updated_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now())
@@ -37,7 +40,7 @@ CREATE TABLE public.reviews (
 -- Enable RLS for reviews
 ALTER TABLE public.reviews ENABLE ROW LEVEL SECURITY;
 
--- Create policies for reviews
+-- Policies for reviews
 CREATE POLICY "Reviews are viewable by everyone." ON public.reviews
   FOR SELECT USING (true);
 
@@ -47,28 +50,28 @@ CREATE POLICY "Authenticated users can create reviews." ON public.reviews
 CREATE POLICY "Users can update their own reviews." ON public.reviews
   FOR UPDATE USING (auth.uid() = author_id);
 
--- Create coupons table
+-- 3. Create coupons table (English column names matching JSON data structure)
 CREATE TABLE public.coupons (
   id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
-  loja TEXT NOT NULL,
-  codigo TEXT,
-  desconto TEXT NOT NULL,
-  link TEXT NOT NULL,
-  expira_em TIMESTAMP WITH TIME ZONE,
+  store_name TEXT NOT NULL,
+  code TEXT,
+  discount TEXT NOT NULL,
+  affiliate_link TEXT NOT NULL,
+  expiration_date TIMESTAMP WITH TIME ZONE,
   created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now())
 );
 
 -- Enable RLS for coupons
 ALTER TABLE public.coupons ENABLE ROW LEVEL SECURITY;
 
--- Create policies for coupons
+-- Policies for coupons
 CREATE POLICY "Coupons are viewable by everyone." ON public.coupons
   FOR SELECT USING (true);
 
 CREATE POLICY "Authenticated users can create coupons." ON public.coupons
   FOR INSERT WITH CHECK (auth.role() = 'authenticated');
 
--- Function to handle new user signup
+-- 4. Handle new user signup trigger
 CREATE OR REPLACE FUNCTION public.handle_new_user()
 RETURNS TRIGGER AS $$
 BEGIN
