@@ -19,10 +19,13 @@ export const ReviewForm: React.FC = () => {
     rating: '',
     affiliateLink: '',
     imageUrl: '',
+    summary: '',
+    price: '',
+    category: 'Outros',
   });
   const [specs, setSpecs] = useState<Spec[]>([{ key: '', value: '' }]);
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
@@ -91,11 +94,14 @@ export const ReviewForm: React.FC = () => {
       const { error } = await supabase.from('reviews').insert({
         title: formData.title,
         content: formData.content,
-        nota: parseFloat(formData.rating),
-        link_afiliado: formData.affiliateLink,
-        imagem_url: formData.imageUrl,
-        specs_tecnicas: specsObject,
+        rating: parseFloat(formData.rating),
+        affiliate_link: formData.affiliateLink,
+        image_url: formData.imageUrl,
+        specs: specsObject,
         author_id: user.id,
+        summary: formData.summary,
+        price: formData.price,
+        category: formData.category,
       });
 
       if (error) throw error;
@@ -107,6 +113,9 @@ export const ReviewForm: React.FC = () => {
         rating: '',
         affiliateLink: '',
         imageUrl: '',
+        summary: '',
+        price: '',
+        category: 'Outros',
       });
       setSpecs([{ key: '', value: '' }]);
       window.scrollTo(0, 0);
@@ -143,6 +152,47 @@ export const ReviewForm: React.FC = () => {
             className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
             placeholder="Ex: Teclado Mecânico Logitech G Pro"
           />
+        </div>
+
+        <div className="col-span-2">
+          <label className="block text-sm font-medium text-gray-700 mb-1">Resumo (para o card)</label>
+          <input
+            type="text"
+            name="summary"
+            required
+            value={formData.summary}
+            onChange={handleInputChange}
+            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
+            placeholder="Um breve resumo do produto..."
+          />
+        </div>
+
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">Preço</label>
+          <input
+            type="text"
+            name="price"
+            required
+            value={formData.price}
+            onChange={handleInputChange}
+            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
+            placeholder="Ex: R$ 499,00"
+          />
+        </div>
+
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">Categoria</label>
+          <select
+            name="category"
+            value={formData.category}
+            onChange={handleInputChange}
+            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none bg-white"
+          >
+            <option value="Teclado">Teclado</option>
+            <option value="Monitor">Monitor</option>
+            <option value="GPU">GPU</option>
+            <option value="Outros">Outros</option>
+          </select>
         </div>
 
         <div>
