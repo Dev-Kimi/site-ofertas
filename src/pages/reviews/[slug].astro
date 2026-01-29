@@ -1,0 +1,232 @@
+---
+import MainLayout from '../../layouts/MainLayout.astro';
+import { supabase } from '../../lib/supabase';
+import ReactMarkdown from 'react-markdown';
+import { Calendar, User, Star, ShoppingCart, Check, X, ArrowRight } from 'lucide-react';
+
+export async function getStaticPaths() {
+  const { data: reviews } = await supabase
+    .from('reviews')
+    .select('slug');
+
+  return (reviews || []).map((review) => ({
+    params: { slug: review.slug },
+  }));
+}
+
+const { slug } = Astro.params;
+
+const { data: review, error } = await supabase
+  .from('reviews')
+  .select('*, profiles(full_name)')
+  .eq('slug', slug)
+  .single();
+
+if (error || !review) {
+  return Astro.redirect('/404');
+}
+
+const formattedDate = new Date(review.created_at).toLocaleDateString('pt-BR', {
+  day: 'numeric',
+  month: 'long',
+  year: 'numeric'
+});
+
+// Schema.org Product Data
+const schema = {
+  "@context": "https://schema.org/",
+  "@type": "Product",
+  "name": review.title,
+  "image": review.image_url,
+  "description": review.summary,
+  "review": {
+    "@type": "Review",
+    "reviewRating": {
+      "@type": "Rating",
+      "ratingValue": review.rating,
+      "bestRating": "10"
+    },
+    "author": {
+      "@type": "Person",
+      "name": review.profiles?.full_name || 'TechOffers Team'
+    }
+  },
+  "offers": {
+    "@type": "Offer",
+    "priceCurrency": "BRL",
+    "price": review.price.replace(/[^0-9,]/g, '').replace(',', '.'),
+    "url": review.affiliate_link,
+    "availability": "https://schema.org/InStock"
+  }
+};
+
+// Mock Pros & Cons (since not in DB yet)
+// In a real scenario, you would parse this from markdown or add columns to DB
+const pros = ["Construção premium", "Excelente desempenho", "Custo-benefício"];
+const cons = ["Preço elevado", "Disponibilidade limitada"];
+
+---
+
+<MainLayout 
+  title={`${review.title} - Review Completo | TechOffers`} 
+  description={review.summary} 
+  image={review.image_url}
+  schema={schema}
+>
+  <div class="bg-white pb-20">
+    {/* Hero Section */}
+    <div class="relative bg-gray-900 text-white overflow-hidden">
+      <div class="absolute inset-0">
+        <img 
+          src={review.image_url} 
+          alt={review.title} 
+          class="w-full h-full object-cover opacity-20 blur-sm scale-105"
+        />
+        <div class="absolute inset-0 bg-gradient-to-t from-gray-900 via-gray-900/80 to-transparent"></div>
+      </div>
+
+      <div class="container mx-auto px-4 py-16 md:py-24 relative z-10">
+        <div class="max-w-4xl mx-auto text-center">
+          <div class="inline-flex items-center gap-2 bg-blue-600/20 border border-blue-500/30 text-blue-300 px-4 py-1.5 rounded-full text-sm font-medium mb-6 backdrop-blur-sm">
+            <span>{review.category || 'Hardware'}</span>
+            <span>•</span>
+            <span>{formattedDate}</span>
+          </div>
+
+          <h1 class="text-4xl md:text-6xl font-bold mb-6 leading-tight tracking-tight">
+            {review.title}
+          </h1>
+
+          <div class="flex flex-wrap justify-center items-center gap-6 mb-8">
+            <div class="flex items-center gap-2 bg-white/10 px-4 py-2 rounded-lg backdrop-blur-sm">
+              <User className="w-5 h-5 text-blue-400" />
+              <span class="font-medium">{review.profiles?.full_name || 'TechOffers Team'}</span>
+            </div>
+            <div class="flex items-center gap-2 bg-yellow-500/20 px-4 py-2 rounded-lg border border-yellow-500/30 backdrop-blur-sm">
+              <Star className="w-5 h-5 text-yellow-400 fill-current" />
+              <span class="font-bold text-yellow-400">{review.rating}/10</span>
+            </div>
+          </div>
+
+          <div class="flex flex-col sm:flex-row justify-center gap-4">
+            <a 
+              href={review.affiliate_link}
+              target="_blank"
+              rel="noopener noreferrer"
+              class="inline-flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-8 py-4 rounded-xl font-bold text-lg transition transform hover:-translate-y-1 shadow-lg hover:shadow-blue-600/25"
+            >
+              <ShoppingCart className="w-5 h-5" />
+              Ver Melhor Preço
+              <ArrowRight className="w-5 h-5" />
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="container mx-auto px-4 -mt-10 relative z-20">
+      <div class="max-w-5xl mx-auto">
+        {/* Quick Summary Box */}
+        <div class="bg-white rounded-2xl shadow-xl border border-gray-100 p-8 mb-12">
+          <h2 class="text-xl font-bold text-gray-900 mb-4 flex items-center gap-2">
+            <span class="w-1 h-6 bg-blue-600 rounded-full"></span>
+            Resumo Rápido
+          </h2>
+          <p class="text-gray-600 text-lg leading-relaxed">
+            {review.summary}
+          </p>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-12">
+          {/* Main Content */}
+          <div class="lg:col-span-8 space-y-12">
+            {/* Content Body */}
+            <article class="prose prose-lg prose-blue max-w-none bg-white">
+              <ReactMarkdown client:only="react">{review.content}</ReactMarkdown>
+            </article>
+
+            {/* Pros & Cons */}
+            <div class="grid md:grid-cols-2 gap-6">
+              <div class="bg-green-50 rounded-xl p-6 border border-green-100">
+                <h3 class="text-lg font-bold text-green-800 mb-4 flex items-center gap-2">
+                  <Check className="w-5 h-5" /> Prós
+                </h3>
+                <ul class="space-y-3">
+                  {pros.map(item => (
+                    <li class="flex items-start gap-2 text-green-700">
+                      <span class="mt-1.5 w-1.5 h-1.5 bg-green-500 rounded-full flex-shrink-0"></span>
+                      {item}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+              <div class="bg-red-50 rounded-xl p-6 border border-red-100">
+                <h3 class="text-lg font-bold text-red-800 mb-4 flex items-center gap-2">
+                  <X className="w-5 h-5" /> Contras
+                </h3>
+                <ul class="space-y-3">
+                  {cons.map(item => (
+                    <li class="flex items-start gap-2 text-red-700">
+                      <span class="mt-1.5 w-1.5 h-1.5 bg-red-500 rounded-full flex-shrink-0"></span>
+                      {item}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            </div>
+          </div>
+
+          {/* Sidebar */}
+          <div class="lg:col-span-4 space-y-8">
+            {/* Sticky Specs Table */}
+            <div class="sticky top-24 space-y-8">
+              <div class="bg-white rounded-xl shadow-lg border border-gray-100 overflow-hidden">
+                <div class="bg-gray-50 px-6 py-4 border-b border-gray-200">
+                  <h3 class="font-bold text-gray-900">Especificações Técnicas</h3>
+                </div>
+                <div class="divide-y divide-gray-100">
+                  {review.technical_specs && Object.entries(review.technical_specs).map(([key, value]) => (
+                    <div class="flex justify-between px-6 py-3 hover:bg-gray-50 transition-colors">
+                      <span class="text-sm text-gray-500 font-medium">{key}</span>
+                      <span class="text-sm text-gray-900 font-semibold text-right pl-4">{value}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Sticky Mobile Button Placeholder (Visible only on mobile via CSS if needed, but here we put it in sidebar for desktop) */}
+              <div class="bg-blue-50 rounded-xl p-6 border border-blue-100 text-center">
+                <p class="text-sm text-blue-600 font-medium mb-2">Gostou do {review.title}?</p>
+                <div class="text-3xl font-bold text-gray-900 mb-4">{review.price}</div>
+                <a 
+                  href={review.affiliate_link}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  class="block w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 rounded-lg shadow transition"
+                >
+                  Comprar Agora
+                </a>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    {/* Mobile Sticky Footer CTA */}
+    <div class="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 p-4 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.1)] md:hidden z-50 flex items-center justify-between gap-4">
+      <div class="flex flex-col">
+        <span class="text-xs text-gray-500">Melhor preço</span>
+        <span class="text-xl font-bold text-gray-900">{review.price}</span>
+      </div>
+      <a 
+        href={review.affiliate_link}
+        target="_blank"
+        rel="noopener noreferrer"
+        class="bg-blue-600 text-white px-6 py-3 rounded-lg font-bold text-sm flex items-center gap-2 shadow-lg"
+      >
+        Ver Oferta <ArrowRight className="w-4 h-4" />
+      </a>
+    </div>
+  </div>
+</MainLayout>
