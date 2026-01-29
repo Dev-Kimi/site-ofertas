@@ -65,7 +65,7 @@ export const ReviewsList: React.FC = () => {
             className={`px-4 py-2 rounded-full text-sm font-medium transition-colors ${
               category === cat
                 ? 'bg-blue-600 text-white shadow-md'
-                : 'bg-white text-gray-600 hover:bg-gray-100 border border-gray-200'
+                : 'bg-white dark:bg-gray-800 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 border border-gray-200 dark:border-gray-700'
             }`}
           >
             {cat}
@@ -91,7 +91,7 @@ export const ReviewsList: React.FC = () => {
 
       {filteredReviews.length === 0 && (
         <div className="text-center py-20">
-          <p className="text-gray-500 text-lg">Nenhum review encontrado.</p>
+          <p className="text-gray-500 dark:text-gray-400 text-lg">Nenhum review encontrado.</p>
         </div>
       )}
     </div>

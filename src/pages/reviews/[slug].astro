@@ -3,10 +3,14 @@ import MainLayout from '../../layouts/MainLayout.astro';
 import { supabase } from '../../lib/supabase';
 import ReactMarkdown from 'react-markdown';
 import { Calendar, User, Star, ShoppingCart, Check, X, ArrowRight } from 'lucide-react';
+import { ReviewOwnerControls } from '../../components/ReviewOwnerControls';
 
 export const prerender = false;
 
 const { slug } = Astro.params;
+
+// Get current user server-side
+const { data: { user } } = await supabase.auth.getUser();
 
 const { data: review, error } = await supabase
   .from('reviews')
@@ -65,7 +69,7 @@ const cons = ["Preço elevado", "Disponibilidade limitada"];
   image={review.image_url}
   schema={schema}
 >
-  <div class="bg-white pb-20">
+  <div class="bg-white dark:bg-gray-900 pb-20 transition-colors duration-200">
     {/* Hero Section */}
     <div class="relative bg-gray-900 text-white overflow-hidden">
       <div class="absolute inset-0">
@@ -100,17 +104,27 @@ const cons = ["Preço elevado", "Disponibilidade limitada"];
             </div>
           </div>
 
-          <div class="flex flex-col sm:flex-row justify-center gap-4">
-            <a 
-              href={review.affiliate_link}
-              target="_blank"
-              rel="noopener noreferrer"
-              class="inline-flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-8 py-4 rounded-xl font-bold text-lg transition transform hover:-translate-y-1 shadow-lg hover:shadow-blue-600/25"
-            >
-              <ShoppingCart className="w-5 h-5" />
-              Ver Melhor Preço
-              <ArrowRight className="w-5 h-5" />
-            </a>
+          <div class="flex flex-col items-center gap-4">
+            <div class="flex flex-col sm:flex-row justify-center gap-4">
+              <a 
+                href={review.affiliate_link}
+                target="_blank"
+                rel="noopener noreferrer"
+                class="inline-flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-8 py-4 rounded-xl font-bold text-lg transition transform hover:-translate-y-1 shadow-lg hover:shadow-blue-600/25"
+              >
+                <ShoppingCart className="w-5 h-5" />
+                Ver Melhor Preço
+                <ArrowRight className="w-5 h-5" />
+              </a>
+            </div>
+
+            {/* Edit/Delete Controls for Author */}
+            <ReviewOwnerControls 
+              client:only="react"
+              reviewId={review.id} 
+              authorId={review.author_id}
+              currentUserId={user?.id}
+            />
           </div>
         </div>
       </div>
@@ -119,12 +133,12 @@ const cons = ["Preço elevado", "Disponibilidade limitada"];
     <div class="container mx-auto px-4 -mt-10 relative z-20">
       <div class="max-w-5xl mx-auto">
         {/* Quick Summary Box */}
-        <div class="bg-white rounded-2xl shadow-xl border border-gray-100 p-8 mb-12">
-          <h2 class="text-xl font-bold text-gray-900 mb-4 flex items-center gap-2">
+        <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-xl border border-gray-100 dark:border-gray-700 p-8 mb-12 transition-colors duration-200">
+          <h2 class="text-xl font-bold text-gray-900 dark:text-gray-100 mb-4 flex items-center gap-2">
             <span class="w-1 h-6 bg-blue-600 rounded-full"></span>
             Resumo Rápido
           </h2>
-          <p class="text-gray-600 text-lg leading-relaxed">
+          <p class="text-gray-600 dark:text-gray-300 text-lg leading-relaxed">
             {review.summary}
           </p>
         </div>
@@ -133,32 +147,32 @@ const cons = ["Preço elevado", "Disponibilidade limitada"];
           {/* Main Content */}
           <div class="lg:col-span-8 space-y-12">
             {/* Content Body */}
-            <article class="prose prose-lg prose-blue max-w-none bg-white">
+            <article class="prose prose-lg prose-blue dark:prose-invert max-w-none bg-white dark:bg-transparent">
               <ReactMarkdown client:only="react">{review.content}</ReactMarkdown>
             </article>
 
             {/* Pros & Cons */}
             <div class="grid md:grid-cols-2 gap-6">
-              <div class="bg-green-50 rounded-xl p-6 border border-green-100">
-                <h3 class="text-lg font-bold text-green-800 mb-4 flex items-center gap-2">
+              <div class="bg-green-50 dark:bg-green-900/20 rounded-xl p-6 border border-green-100 dark:border-green-900/30">
+                <h3 class="text-lg font-bold text-green-800 dark:text-green-300 mb-4 flex items-center gap-2">
                   <Check className="w-5 h-5" /> Prós
                 </h3>
                 <ul class="space-y-3">
                   {pros.map(item => (
-                    <li class="flex items-start gap-2 text-green-700">
+                    <li class="flex items-start gap-2 text-green-700 dark:text-green-400">
                       <span class="mt-1.5 w-1.5 h-1.5 bg-green-500 rounded-full flex-shrink-0"></span>
                       {item}
                     </li>
                   ))}
                 </ul>
               </div>
-              <div class="bg-red-50 rounded-xl p-6 border border-red-100">
-                <h3 class="text-lg font-bold text-red-800 mb-4 flex items-center gap-2">
+              <div class="bg-red-50 dark:bg-red-900/20 rounded-xl p-6 border border-red-100 dark:border-red-900/30">
+                <h3 class="text-lg font-bold text-red-800 dark:text-red-300 mb-4 flex items-center gap-2">
                   <X className="w-5 h-5" /> Contras
                 </h3>
                 <ul class="space-y-3">
                   {cons.map(item => (
-                    <li class="flex items-start gap-2 text-red-700">
+                    <li class="flex items-start gap-2 text-red-700 dark:text-red-400">
                       <span class="mt-1.5 w-1.5 h-1.5 bg-red-500 rounded-full flex-shrink-0"></span>
                       {item}
                     </li>
@@ -172,24 +186,24 @@ const cons = ["Preço elevado", "Disponibilidade limitada"];
           <div class="lg:col-span-4 space-y-8">
             {/* Sticky Specs Table */}
             <div class="sticky top-24 space-y-8">
-              <div class="bg-white rounded-xl shadow-lg border border-gray-100 overflow-hidden">
-                <div class="bg-gray-50 px-6 py-4 border-b border-gray-200">
-                  <h3 class="font-bold text-gray-900">Especificações Técnicas</h3>
+              <div class="bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-100 dark:border-gray-700 overflow-hidden transition-colors duration-200">
+                <div class="bg-gray-50 dark:bg-gray-700 px-6 py-4 border-b border-gray-200 dark:border-gray-600">
+                  <h3 class="font-bold text-gray-900 dark:text-white">Especificações Técnicas</h3>
                 </div>
-                <div class="divide-y divide-gray-100">
+                <div class="divide-y divide-gray-100 dark:divide-gray-700">
                   {review.technical_specs && Object.entries(review.technical_specs).map(([key, value]) => (
-                    <div class="flex justify-between px-6 py-3 hover:bg-gray-50 transition-colors">
-                      <span class="text-sm text-gray-500 font-medium">{key}</span>
-                      <span class="text-sm text-gray-900 font-semibold text-right pl-4">{value}</span>
+                    <div class="flex justify-between px-6 py-3 hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors">
+                      <span class="text-sm text-gray-500 dark:text-gray-400 font-medium">{key}</span>
+                      <span class="text-sm text-gray-900 dark:text-gray-200 font-semibold text-right pl-4">{value}</span>
                     </div>
                   ))}
                 </div>
               </div>
 
-              {/* Sticky Mobile Button Placeholder (Visible only on mobile via CSS if needed, but here we put it in sidebar for desktop) */}
-              <div class="bg-blue-50 rounded-xl p-6 border border-blue-100 text-center">
-                <p class="text-sm text-blue-600 font-medium mb-2">Gostou do {review.title}?</p>
-                <div class="text-3xl font-bold text-gray-900 mb-4">{review.price}</div>
+              {/* Sticky Mobile Button Placeholder */}
+              <div class="bg-blue-50 dark:bg-blue-900/20 rounded-xl p-6 border border-blue-100 dark:border-blue-900/30 text-center">
+                <p class="text-sm text-blue-600 dark:text-blue-300 font-medium mb-2">Gostou do {review.title}?</p>
+                <div class="text-3xl font-bold text-gray-900 dark:text-white mb-4">{review.price}</div>
                 <a 
                   href={review.affiliate_link}
                   target="_blank"
@@ -206,10 +220,10 @@ const cons = ["Preço elevado", "Disponibilidade limitada"];
     </div>
 
     {/* Mobile Sticky Footer CTA */}
-    <div class="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 p-4 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.1)] md:hidden z-50 flex items-center justify-between gap-4">
+    <div class="fixed bottom-0 left-0 right-0 bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700 p-4 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.1)] md:hidden z-50 flex items-center justify-between gap-4 transition-colors duration-200">
       <div class="flex flex-col">
-        <span class="text-xs text-gray-500">Melhor preço</span>
-        <span class="text-xl font-bold text-gray-900">{review.price}</span>
+        <span class="text-xs text-gray-500 dark:text-gray-400">Melhor preço</span>
+        <span class="text-xl font-bold text-gray-900 dark:text-white">{review.price}</span>
       </div>
       <a 
         href={review.affiliate_link}
