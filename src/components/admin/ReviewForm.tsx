@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { supabase } from '../../lib/supabase';
-import { Plus, Trash2, Save, Image as ImageIcon, Loader2 } from 'lucide-react';
+import { Plus, Trash2, Save, Image as ImageIcon, Loader2, Upload, Link as LinkIcon } from 'lucide-react';
 
 interface Spec {
   key: string;
@@ -10,6 +10,9 @@ interface Spec {
 export const ReviewForm: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
+  const [uploadMode, setUploadMode] = useState<'url' | 'file'>('url');
+  const [uploading, setUploading] = useState(false);
+  
   const [formData, setFormData] = useState({
     title: '',
     content: '',
@@ -36,6 +39,35 @@ export const ReviewForm: React.FC = () => {
 
   const removeSpec = (index: number) => {
     setSpecs(specs.filter((_, i) => i !== index));
+  };
+
+  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (!e.target.files || e.target.files.length === 0) {
+      return;
+    }
+    setUploading(true);
+    const file = e.target.files[0];
+    const fileExt = file.name.split('.').pop();
+    const fileName = `${Date.now()}-${Math.random().toString(36).substring(2)}.${fileExt}`;
+    const filePath = `${fileName}`;
+
+    try {
+      const { error: uploadError } = await supabase.storage
+        .from('reviews')
+        .upload(filePath, file);
+
+      if (uploadError) {
+        throw uploadError;
+      }
+
+      const { data } = supabase.storage.from('reviews').getPublicUrl(filePath);
+      
+      setFormData(prev => ({ ...prev, imageUrl: data.publicUrl }));
+    } catch (error: any) {
+      alert('Erro ao fazer upload da imagem: ' + error.message);
+    } finally {
+      setUploading(false);
+    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -143,22 +175,74 @@ export const ReviewForm: React.FC = () => {
         </div>
 
         <div className="col-span-2">
-          <label className="block text-sm font-medium text-gray-700 mb-1">URL da Imagem de Capa</label>
-          <div className="flex gap-2">
-            <input
-              type="url"
-              name="imageUrl"
-              required
-              value={formData.imageUrl}
-              onChange={handleInputChange}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
-              placeholder="https://..."
-            />
-            <div className="flex-shrink-0 w-10 h-10 bg-gray-100 rounded-lg flex items-center justify-center border border-gray-300">
-              {formData.imageUrl ? (
-                <img src={formData.imageUrl} alt="Preview" className="w-full h-full object-cover rounded-lg" />
+          <div className="flex justify-between items-center mb-1">
+            <label className="block text-sm font-medium text-gray-700">Imagem de Capa</label>
+            <div className="flex bg-gray-100 rounded-lg p-1">
+              <button
+                type="button"
+                onClick={() => setUploadMode('url')}
+                className={`px-3 py-1 text-xs font-medium rounded-md transition ${
+                  uploadMode === 'url' ? 'bg-white shadow text-blue-600' : 'text-gray-500 hover:text-gray-700'
+                }`}
+              >
+                <div className="flex items-center gap-1">
+                  <LinkIcon className="w-3 h-3" /> URL
+                </div>
+              </button>
+              <button
+                type="button"
+                onClick={() => setUploadMode('file')}
+                className={`px-3 py-1 text-xs font-medium rounded-md transition ${
+                  uploadMode === 'file' ? 'bg-white shadow text-blue-600' : 'text-gray-500 hover:text-gray-700'
+                }`}
+              >
+                <div className="flex items-center gap-1">
+                  <Upload className="w-3 h-3" /> Upload
+                </div>
+              </button>
+            </div>
+          </div>
+          
+          <div className="flex gap-4 items-start">
+            <div className="flex-grow">
+              {uploadMode === 'url' ? (
+                <input
+                  type="url"
+                  name="imageUrl"
+                  required={!formData.imageUrl}
+                  value={formData.imageUrl}
+                  onChange={handleInputChange}
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
+                  placeholder="https://..."
+                />
               ) : (
-                <ImageIcon className="w-5 h-5 text-gray-400" />
+                <div className="relative">
+                  <input
+                    type="file"
+                    accept="image/*"
+                    onChange={handleFileUpload}
+                    disabled={uploading}
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
+                  />
+                  {uploading && (
+                    <div className="absolute right-3 top-1/2 -translate-y-1/2">
+                      <Loader2 className="w-5 h-5 animate-spin text-blue-600" />
+                    </div>
+                  )}
+                </div>
+              )}
+              {uploadMode === 'file' && (
+                <p className="text-xs text-gray-500 mt-1">
+                  *Requer bucket 'reviews' configurado no Supabase.
+                </p>
+              )}
+            </div>
+
+            <div className="flex-shrink-0 w-20 h-20 bg-gray-100 rounded-lg flex items-center justify-center border border-gray-300 overflow-hidden">
+              {formData.imageUrl ? (
+                <img src={formData.imageUrl} alt="Preview" className="w-full h-full object-cover" />
+              ) : (
+                <ImageIcon className="w-8 h-8 text-gray-400" />
               )}
             </div>
           </div>
