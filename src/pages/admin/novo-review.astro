@@ -1,0 +1,17 @@
+---
+import MainLayout from '../../layouts/MainLayout.astro';
+import { AuthGuard } from '../../components/admin/AuthGuard';
+import { ReviewForm } from '../../components/admin/ReviewForm';
+
+const title = "Novo Review | Admin";
+---
+
+<MainLayout title={title}>
+  <div class="bg-gray-50 min-h-screen py-12">
+    <div class="container mx-auto px-4">
+      <AuthGuard client:only="react">
+        <ReviewForm client:only="react" />
+      </AuthGuard>
+    </div>
+  </div>
+</MainLayout>
