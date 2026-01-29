@@ -1,0 +1,14 @@
+---
+import MainLayout from '../layouts/MainLayout.astro';
+import { UserProfile } from '../components/UserProfile';
+
+const title = "Meu Perfil | TechOffers";
+---
+
+<MainLayout title={title}>
+  <div class="bg-gray-50 min-h-screen py-12 px-4">
+    <div class="container mx-auto">
+      <UserProfile client:only="react" />
+    </div>
+  </div>
+</MainLayout>

@@ -1,4 +1,6 @@
 ---
+import { UserMenu } from '../components/UserMenu';
+
 interface Props {
 	title: string;
 	description?: string;
@@ -62,9 +64,8 @@ const canonicalURL = new URL(Astro.url.pathname, Astro.site || 'http://localhost
 				</div>
 
 				<div class="flex items-center gap-4">
-					<button class="hidden md:block text-gray-500 hover:text-blue-600">
-						<svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
-					</button>
+					<UserMenu client:load />
+					
 					<button class="md:hidden text-gray-600 focus:outline-none" aria-label="Menu">
 						<svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
 							<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16m-7 6h7" />
