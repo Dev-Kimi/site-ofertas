@@ -1,58 +1,9 @@
 ---
 import MainLayout from '../layouts/MainLayout.astro';
-import { ComparisonTable } from '../components/ComparisonTable';
+import { Comparator } from '../components/Comparator';
 
 const title = "Comparador de Hardware | TechOffers";
 const description = "Compare especificações técnicas de teclados, monitores e placas de vídeo lado a lado.";
-
-// Mock data for demonstration
-const products = [
-  {
-    id: "1",
-    name: "Teclado Mecânico XYZ Pro",
-    specs: {
-      "Tipo": "Mecânico",
-      "Switch": "Brown Tátil",
-      "Iluminação": "RGB Key-by-Key",
-      "Conexão": "USB-C, Bluetooth 5.0",
-      "Material": "Alumínio + PBT",
-      "Preço": "R$ 450,00"
-    }
-  },
-  {
-    id: "2",
-    name: "Teclado Gamer ABC Elite",
-    specs: {
-      "Tipo": "Mecânico",
-      "Switch": "Red Linear",
-      "Iluminação": "Rainbow (Fixo)",
-      "Conexão": "USB-A Fixo",
-      "Material": "Plástico ABS",
-      "Preço": "R$ 220,00"
-    }
-  },
-  {
-    id: "3",
-    name: "Teclado Office Silent",
-    specs: {
-      "Tipo": "Membrana",
-      "Switch": "N/A",
-      "Iluminação": "White Backlight",
-      "Conexão": "Wireless 2.4Ghz",
-      "Material": "Plástico Reciclado",
-      "Preço": "R$ 150,00"
-    }
-  }
-];
-
-const specLabels = {
-  "Tipo": "Tipo de Teclado",
-  "Switch": "Switch / Acionamento",
-  "Iluminação": "Retroiluminação",
-  "Conexão": "Conectividade",
-  "Material": "Construção",
-  "Preço": "Preço Médio"
-};
 ---
 
 <MainLayout title={title} description={description}>
@@ -68,25 +19,15 @@ const specLabels = {
     </div>
 
     <div class="container mx-auto px-4">
-      <div class="bg-white rounded-xl shadow-lg p-6 md:p-8">
-        <div class="flex justify-between items-center mb-6">
-          <h2 class="text-xl font-bold text-gray-800">Comparando: Teclados</h2>
-          <button class="text-blue-600 hover:text-blue-800 text-sm font-medium flex items-center gap-1">
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" /></svg>
-            Adicionar Produto
-          </button>
-        </div>
-        
-        <ComparisonTable products={products} specLabels={specLabels} />
-        
-        <div class="mt-8 p-4 bg-yellow-50 border border-yellow-200 rounded-lg text-sm text-yellow-800 flex items-start gap-3">
-          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 flex-shrink-0 mt-0.5" viewBox="0 0 20 20" fill="currentColor">
-            <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd" />
-          </svg>
-          <p>
-            <strong>Nota:</strong> Os preços podem variar de acordo com a loja e promoções vigentes. Verifique sempre o valor final no site do vendedor.
-          </p>
-        </div>
+      <Comparator client:only="react" />
+      
+      <div class="mt-8 p-4 bg-yellow-50 border border-yellow-200 rounded-lg text-sm text-yellow-800 flex items-start gap-3 max-w-6xl mx-auto">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 flex-shrink-0 mt-0.5" viewBox="0 0 20 20" fill="currentColor">
+          <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd" />
+        </svg>
+        <p>
+          <strong>Nota:</strong> Os preços podem variar de acordo com a loja e promoções vigentes. Verifique sempre o valor final no site do vendedor.
+        </p>
       </div>
     </div>
   </div>
