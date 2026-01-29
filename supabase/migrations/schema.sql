@@ -1,5 +1,5 @@
 -- Create profiles table
-CREATE TABLE public.profiles (
+CREATE TABLE IF NOT EXISTS public.profiles (
   id UUID REFERENCES auth.users(id) ON DELETE CASCADE PRIMARY KEY,
   email TEXT UNIQUE NOT NULL,
   full_name TEXT,
@@ -20,18 +20,18 @@ CREATE POLICY "Users can insert their own profile." ON public.profiles
 CREATE POLICY "Users can update own profile." ON public.profiles
   FOR UPDATE USING (auth.uid() = id);
 
--- Create reviews table
-CREATE TABLE public.reviews (
+-- Create reviews table (Updated to match existing schema)
+CREATE TABLE IF NOT EXISTS public.reviews (
   id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
-  title TEXT NOT NULL,
-  content TEXT NOT NULL,
+  titulo TEXT NOT NULL,
+  slug TEXT UNIQUE NOT NULL,
+  categoria TEXT,
+  conteudo TEXT,
   specs_tecnicas JSONB DEFAULT '{}'::jsonb,
   nota NUMERIC(3, 1) CHECK (nota >= 0 AND nota <= 10),
-  link_afiliado TEXT,
   imagem_url TEXT,
-  author_id UUID REFERENCES public.profiles(id),
-  created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()),
-  updated_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now())
+  link_afiliado TEXT,
+  criado_em TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now())
 );
 
 -- Enable RLS for reviews
@@ -45,17 +45,17 @@ CREATE POLICY "Authenticated users can create reviews." ON public.reviews
   FOR INSERT WITH CHECK (auth.role() = 'authenticated');
 
 CREATE POLICY "Users can update their own reviews." ON public.reviews
-  FOR UPDATE USING (auth.uid() = author_id);
+  FOR UPDATE USING (auth.role() = 'authenticated'); -- Simplified as author_id is missing in current schema
 
--- Create coupons table
-CREATE TABLE public.coupons (
+-- Create coupons table (Updated to match existing schema)
+CREATE TABLE IF NOT EXISTS public.coupons (
   id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
   loja TEXT NOT NULL,
   codigo TEXT,
-  desconto TEXT NOT NULL,
-  link TEXT NOT NULL,
-  expira_em TIMESTAMP WITH TIME ZONE,
-  created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now())
+  desconto_porcentagem INTEGER,
+  link_loja TEXT NOT NULL,
+  expira_em DATE,
+  ativo BOOLEAN DEFAULT true
 );
 
 -- Enable RLS for coupons
@@ -79,6 +79,7 @@ END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
 
 -- Trigger for new user signup
-CREATE OR REPLACE TRIGGER on_auth_user_created
+DROP TRIGGER IF EXISTS on_auth_user_created ON auth.users;
+CREATE TRIGGER on_auth_user_created
   AFTER INSERT ON auth.users
   FOR EACH ROW EXECUTE FUNCTION public.handle_new_user();

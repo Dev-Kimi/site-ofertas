@@ -56,14 +56,22 @@ export const ReviewForm: React.FC = () => {
 
       if (!user) throw new Error('Usuário não autenticado');
 
+      // Generate slug from title
+      const slug = formData.title
+        .toLowerCase()
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '')
+        .replace(/[^a-z0-9]+/g, '-')
+        .replace(/(^-|-$)+/g, '');
+
       const { error } = await supabase.from('reviews').insert({
-        title: formData.title,
-        content: formData.content,
+        titulo: formData.title,
+        slug: slug,
+        conteudo: formData.content,
         nota: parseFloat(formData.rating),
         link_afiliado: formData.affiliateLink,
         imagem_url: formData.imageUrl,
         specs_tecnicas: specsObject,
-        author_id: user.id,
       });
 
       if (error) throw error;
