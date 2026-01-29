@@ -1,0 +1,118 @@
+---
+import MainLayout from '../layouts/MainLayout.astro';
+import { CouponGrid } from '../components/CouponGrid';
+import { ReviewCard } from '../components/ReviewCard';
+import couponsData from '../data/coupons.json';
+import { getCollection } from 'astro:content';
+
+const reviews = await getCollection('reviews');
+const latestReviews = reviews.slice(0, 3);
+
+const schema = {
+  "@context": "https://schema.org",
+  "@type": "WebSite",
+  "name": "TechOffers",
+  "url": Astro.url.href,
+  "potentialAction": {
+    "@type": "SearchAction",
+    "target": {
+      "@type": "EntryPoint",
+      "urlTemplate": `${Astro.url.href}search?q={search_term_string}`
+    },
+    "query-input": "required name=search_term_string"
+  }
+};
+---
+
+<MainLayout title="TechOffers - Reviews de Hardware e Cupons" schema={schema}>
+  <!-- Hero Section -->
+  <section class="bg-gradient-to-r from-blue-600 to-indigo-700 text-white py-20 rounded-3xl my-6 mx-4 md:mx-0 relative overflow-hidden">
+    <div class="absolute inset-0 bg-[url('https://placehold.co/1920x600/1e40af/ffffff?text=Tech+Pattern&font=roboto')] opacity-10 mix-blend-overlay"></div>
+    <div class="container mx-auto px-4 text-center relative z-10">
+      <span class="inline-block bg-blue-500/30 backdrop-blur-sm border border-blue-400/30 text-blue-100 px-4 py-1 rounded-full text-sm font-semibold mb-6">
+        🚀 O melhor hardware pelo menor preço
+      </span>
+      <h1 class="text-4xl md:text-6xl font-bold mb-6 leading-tight">
+        Reviews Sinceros & <br/><span class="text-yellow-300">Cupons Exclusivos</span>
+      </h1>
+      <p class="text-xl md:text-2xl mb-10 text-blue-100 max-w-3xl mx-auto">
+        Análises técnicas profundas de teclados, monitores e GPUs para você fazer a escolha certa e economizar.
+      </p>
+      <div class="flex flex-col sm:flex-row justify-center gap-4">
+        <a href="#reviews" class="bg-white text-blue-600 px-8 py-4 rounded-xl font-bold hover:bg-blue-50 transition shadow-lg flex items-center justify-center gap-2">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"></path><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"></path></svg>
+          Ler Reviews
+        </a>
+        <a href="#cupons" class="bg-blue-800/50 backdrop-blur-sm border border-blue-400/30 text-white px-8 py-4 rounded-xl font-bold hover:bg-blue-800/70 transition flex items-center justify-center gap-2">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.91 8.84 8.56 2.23a1.93 1.93 0 0 0-1.81 0l-2.33 1.26a2.91 2.91 0 0 1-2.69 0l-1-.55a1.93 1.93 0 0 0-1.81 0l-2.33 1.26a2.91 2.91 0 0 1-2.69 0l-1-.55a1.93 1.93 0 0 0-1.81 0L2.23 8.56a2.91 2.91 0 0 1 0 2.69l.55 1a1.93 1.93 0 0 0 0 1.81l-1.26 2.33a2.91 2.91 0 0 1 0 2.69l.55 1a1.93 1.93 0 0 0 0 1.81l-1.26 2.33a2.91 2.91 0 0 1 0 2.69l.55 1a1.93 1.93 0 0 0 1.81 0l2.33-1.26a2.91 2.91 0 0 1 2.69 0l1 .55a1.93 1.93 0 0 0 1.81 0l2.33-1.26a2.91 2.91 0 0 1 2.69 0l1 .55a1.93 1.93 0 0 0 1.81 0l2.33-1.26a2.91 2.91 0 0 1 0-2.69l-.55-1a1.93 1.93 0 0 0 0-1.81l1.26-2.33a2.91 2.91 0 0 1 0-2.69l-.55-1a1.93 1.93 0 0 0 0-1.81l1.26-2.33a2.91 2.91 0 0 1 0-2.69l-.55-1ZM12 12a3 3 0 1 1 0-6 3 3 0 0 1 0 6Z"/></svg>
+          Pegar Cupons
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <!-- Reviews Section -->
+  <section id="reviews" class="py-16">
+    <div class="container mx-auto px-4">
+      <div class="flex justify-between items-end mb-10">
+        <div>
+          <h2 class="text-3xl font-bold text-gray-900 mb-2 flex items-center gap-2">
+            <span class="bg-blue-100 text-blue-600 p-2 rounded-lg">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
+            </span>
+            Últimos Reviews
+          </h2>
+          <p class="text-gray-600">Confira nossas análises mais recentes de hardware.</p>
+        </div>
+        <a href="/reviews" class="text-blue-600 font-semibold hover:text-blue-800 transition hidden md:flex items-center gap-1">
+          Ver todos <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>
+        </a>
+      </div>
+      
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+        {latestReviews.map(review => (
+          <ReviewCard 
+            title={review.data.title}
+            image={review.data.image}
+            rating={review.data.rating}
+            summary={review.data.summary}
+            price={review.data.price}
+            affiliateLink={review.data.affiliateLink}
+          />
+        ))}
+      </div>
+      
+      <div class="mt-8 text-center md:hidden">
+        <a href="/reviews" class="text-blue-600 font-semibold hover:text-blue-800 transition">
+          Ver todos os reviews &rarr;
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <!-- Coupons Section -->
+  <section id="cupons" class="py-16 bg-blue-50 rounded-3xl mx-4 md:mx-0">
+    <div class="container mx-auto px-4">
+      <div class="text-center mb-12">
+        <h2 class="text-3xl font-bold text-gray-900 mb-4 flex items-center justify-center gap-2">
+          <span class="bg-green-100 text-green-600 p-2 rounded-lg">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="5" x2="5" y2="19"></line><circle cx="6.5" cy="6.5" r="2.5"></circle><circle cx="17.5" cy="17.5" r="2.5"></circle></svg>
+          </span>
+          Cupons em Destaque
+        </h2>
+        <p class="text-gray-600 max-w-2xl mx-auto">
+          Economize na sua próxima compra com nossa seleção de cupons verificados.
+        </p>
+      </div>
+      
+      <CouponGrid coupons={couponsData} />
+      
+      <div class="mt-12 text-center">
+        <a href="/cupons" class="inline-flex items-center gap-2 bg-gray-900 text-white px-8 py-3 rounded-lg font-bold hover:bg-gray-800 transition shadow-lg hover:shadow-xl transform hover:-translate-y-1">
+          Ver Todos os Cupons
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>
+        </a>
+      </div>
+    </div>
+  </section>
+</MainLayout>

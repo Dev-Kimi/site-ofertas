@@ -1,0 +1,127 @@
+---
+interface Props {
+	title: string;
+	description?: string;
+	image?: string;
+	schema?: object;
+}
+
+const { 
+	title, 
+	description = "Reviews de Hardware e Cupons de Desconto - TechOffers", 
+	image = "/og-image.png",
+	schema
+} = Astro.props;
+
+const canonicalURL = new URL(Astro.url.pathname, Astro.site || 'http://localhost:4321');
+---
+
+<!doctype html>
+<html lang="pt-BR">
+	<head>
+		<meta charset="UTF-8" />
+		<meta name="description" content={description} />
+		<meta name="viewport" content="width=device-width" />
+		<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+		<link rel="canonical" href={canonicalURL} />
+		<meta name="generator" content={Astro.generator} />
+		
+		<!-- Open Graph / Facebook -->
+		<meta property="og:type" content="website" />
+		<meta property="og:url" content={Astro.url} />
+		<meta property="og:title" content={title} />
+		<meta property="og:description" content={description} />
+		<meta property="og:image" content={image} />
+
+		<!-- Twitter -->
+		<meta property="twitter:card" content="summary_large_image" />
+		<meta property="twitter:url" content={Astro.url} />
+		<meta property="twitter:title" content={title} />
+		<meta property="twitter:description" content={description} />
+		<meta property="twitter:image" content={image} />
+
+		<title>{title}</title>
+
+		{schema && (
+			<script type="application/ld+json" set:html={JSON.stringify(schema)} />
+		)}
+	</head>
+	<body class="bg-gray-50 text-gray-900 font-sans flex flex-col min-h-screen">
+		<header class="bg-white shadow-sm sticky top-0 z-50">
+			<nav class="container mx-auto px-4 py-4 flex justify-between items-center">
+				<a href="/" class="text-2xl font-bold text-blue-600 flex items-center gap-2">
+					<svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon></svg>
+					TechOffers
+				</a>
+				
+				<div class="hidden md:flex space-x-8">
+					<a href="/" class="hover:text-blue-600 transition font-medium text-gray-700">Início</a>
+					<a href="/reviews" class="hover:text-blue-600 transition font-medium text-gray-700">Reviews</a>
+					<a href="/cupons" class="hover:text-blue-600 transition font-medium text-gray-700">Cupons</a>
+					<a href="/comparador" class="hover:text-blue-600 transition font-medium text-gray-700">Comparador</a>
+				</div>
+
+				<div class="flex items-center gap-4">
+					<button class="hidden md:block text-gray-500 hover:text-blue-600">
+						<svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+					</button>
+					<button class="md:hidden text-gray-600 focus:outline-none" aria-label="Menu">
+						<svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+							<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16m-7 6h7" />
+						</svg>
+					</button>
+				</div>
+			</nav>
+		</header>
+
+		<main class="flex-grow">
+			<slot />
+		</main>
+
+		<footer class="bg-gray-900 text-gray-300 py-12 mt-auto">
+			<div class="container mx-auto px-4">
+				<div class="grid grid-cols-1 md:grid-cols-4 gap-8 mb-8">
+					<div class="col-span-1 md:col-span-1">
+						<a href="/" class="text-2xl font-bold text-white flex items-center gap-2 mb-4">
+							<svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon></svg>
+							TechOffers
+						</a>
+						<p class="text-sm text-gray-400">
+							Sua fonte confiável para reviews técnicos de hardware e os melhores cupons de desconto da internet.
+						</p>
+					</div>
+					<div>
+						<h3 class="text-white text-lg font-bold mb-4">Conteúdo</h3>
+						<ul class="space-y-2 text-sm">
+							<li><a href="/reviews" class="hover:text-white transition">Reviews de Hardware</a></li>
+							<li><a href="/cupons" class="hover:text-white transition">Cupons de Desconto</a></li>
+							<li><a href="/comparador" class="hover:text-white transition">Comparador de Specs</a></li>
+							<li><a href="/blog" class="hover:text-white transition">Blog de Notícias</a></li>
+						</ul>
+					</div>
+					<div>
+						<h3 class="text-white text-lg font-bold mb-4">Categorias</h3>
+						<ul class="space-y-2 text-sm">
+							<li><a href="/reviews/teclados" class="hover:text-white transition">Teclados Mecânicos</a></li>
+							<li><a href="/reviews/monitores" class="hover:text-white transition">Monitores Gamer</a></li>
+							<li><a href="/reviews/gpus" class="hover:text-white transition">Placas de Vídeo</a></li>
+							<li><a href="/reviews/audio" class="hover:text-white transition">Áudio & Headsets</a></li>
+						</ul>
+					</div>
+					<div>
+						<h3 class="text-white text-lg font-bold mb-4">Legal</h3>
+						<ul class="space-y-2 text-sm">
+							<li><a href="/sobre" class="hover:text-white transition">Sobre Nós</a></li>
+							<li><a href="/contato" class="hover:text-white transition">Contato</a></li>
+							<li><a href="/privacidade" class="hover:text-white transition">Política de Privacidade</a></li>
+							<li><a href="/termos" class="hover:text-white transition">Termos de Uso</a></li>
+						</ul>
+					</div>
+				</div>
+				<div class="border-t border-gray-800 pt-8 text-center text-sm text-gray-500">
+					<p>&copy; {new Date().getFullYear()} TechOffers. Todos os direitos reservados.</p>
+				</div>
+			</div>
+		</footer>
+	</body>
+</html>
