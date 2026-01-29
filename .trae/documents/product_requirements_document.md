@@ -3,11 +3,20 @@ The **Review Details Page** is a dynamic page designed to display in-depth produ
 
 ## 2. Core Features
 
-### 2.1 Feature Module
-The requirements consist of the following main page:
-1. **Review Details Page**: Displays the full review content, including metadata, rich text body, specifications, and a final verdict with a call-to-action.
+### 2.1 User Roles
+| Role | Registration Method | Core Permissions |
+|------|---------------------|------------------|
+| Visitor | No registration | View reviews |
+| Author | Email/Social Login | Create and edit own reviews |
 
-### 2.2 Page Details
+### 2.2 Feature Module
+The requirements consist of the following main pages:
+1. **Home page**: List of reviews.
+2. **Review Details Page**: Displays the full review content.
+3. **Login/Register**: User authentication.
+4. **Dashboard/Editor**: Create and edit reviews.
+
+### 2.3 Page Details
 | Page Name | Module Name | Feature description |
 |-----------|-------------|---------------------|
 | **Review Details Page** | Header Section | Displays the review title, publication date, author, category, and a hero image. |
