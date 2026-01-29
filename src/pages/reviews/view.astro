@@ -1,0 +1,11 @@
+---
+import MainLayout from '../../layouts/MainLayout.astro';
+import { ReviewDetails } from '../../components/ReviewDetails';
+
+const title = "Detalhes do Review | TechOffers";
+const description = "Análise detalhada do produto.";
+---
+
+<MainLayout title={title} description={description}>
+  <ReviewDetails client:only="react" />
+</MainLayout>
