@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { supabase } from '../lib/supabase';
-import { Mail, Loader2, ArrowRight, CheckCircle } from 'lucide-react';
+import { Mail, Loader2, ArrowRight, CheckCircle, AlertTriangle } from 'lucide-react';
 
 export const LoginForm: React.FC = () => {
   const [email, setEmail] = useState('');
   const [loading, setLoading] = useState(false);
   const [sent, setSent] = useState(false);
+  const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
@@ -18,8 +19,15 @@ export const LoginForm: React.FC = () => {
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
+    setErrorMsg(null);
     
     try {
+      // Check if Supabase is configured
+      const supabaseUrl = import.meta.env.PUBLIC_SUPABASE_URL;
+      if (!supabaseUrl || supabaseUrl.includes('placeholder')) {
+        throw new Error('Erro de configuração: Variáveis de ambiente do Supabase não encontradas.');
+      }
+
       const { error } = await supabase.auth.signInWithOtp({
         email,
         options: {
@@ -30,7 +38,8 @@ export const LoginForm: React.FC = () => {
       if (error) throw error;
       setSent(true);
     } catch (error: any) {
-      alert(error.message);
+      console.error('Erro no login:', error);
+      setErrorMsg(error.message || 'Ocorreu um erro ao tentar entrar. Tente novamente.');
     } finally {
       setLoading(false);
     }
@@ -63,6 +72,16 @@ export const LoginForm: React.FC = () => {
         <h1 className="text-3xl font-bold text-gray-900 mb-2">Bem-vindo de volta</h1>
         <p className="text-gray-500">Digite seu e-mail para entrar</p>
       </div>
+
+      {errorMsg && (
+        <div className="mb-6 bg-red-50 border border-red-200 rounded-lg p-4 flex items-start gap-3 text-left">
+          <AlertTriangle className="w-5 h-5 text-red-600 flex-shrink-0 mt-0.5" />
+          <div>
+            <h3 className="text-sm font-semibold text-red-800">Erro ao entrar</h3>
+            <p className="text-sm text-red-700 mt-1">{errorMsg}</p>
+          </div>
+        </div>
+      )}
 
       <form onSubmit={handleLogin} className="space-y-6">
         <div>
