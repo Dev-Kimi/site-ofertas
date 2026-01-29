@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { supabase } from '../../lib/supabase';
-import { Plus, Trash2, Save, Image as ImageIcon, Loader2 } from 'lucide-react';
+import { Plus, Trash2, Save, Image as ImageIcon, Loader2, Upload } from 'lucide-react';
+import { v4 as uuidv4 } from 'uuid';
 
 interface Spec {
   key: string;
@@ -18,6 +19,8 @@ export const ReviewForm: React.FC = () => {
     imageUrl: '',
   });
   const [specs, setSpecs] = useState<Spec[]>([{ key: '', value: '' }]);
+  const [uploadMode, setUploadMode] = useState<'url' | 'file'>('url');
+  const [uploadingImage, setUploadingImage] = useState(false);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
@@ -36,6 +39,39 @@ export const ReviewForm: React.FC = () => {
 
   const removeSpec = (index: number) => {
     setSpecs(specs.filter((_, i) => i !== index));
+  };
+
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (!e.target.files || e.target.files.length === 0) {
+      return;
+    }
+
+    const file = e.target.files[0];
+    const fileExt = file.name.split('.').pop();
+    const fileName = `${uuidv4()}.${fileExt}`;
+    const filePath = `${fileName}`;
+
+    setUploadingImage(true);
+
+    try {
+      const { error: uploadError } = await supabase.storage
+        .from('reviews')
+        .upload(filePath, file);
+
+      if (uploadError) {
+        throw uploadError;
+      }
+
+      const { data } = supabase.storage
+        .from('reviews')
+        .getPublicUrl(filePath);
+
+      setFormData((prev) => ({ ...prev, imageUrl: data.publicUrl }));
+    } catch (error: any) {
+      alert('Erro ao fazer upload da imagem: ' + error.message);
+    } finally {
+      setUploadingImage(false);
+    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -151,25 +187,69 @@ export const ReviewForm: React.FC = () => {
         </div>
 
         <div className="col-span-2">
-          <label className="block text-sm font-medium text-gray-700 mb-1">URL da Imagem de Capa</label>
+          <label className="block text-sm font-medium text-gray-700 mb-1">Imagem de Capa</label>
+          <div className="flex gap-4 mb-2">
+            <button
+              type="button"
+              onClick={() => setUploadMode('url')}
+              className={`px-4 py-2 rounded-lg text-sm font-medium transition ${
+                uploadMode === 'url' ? 'bg-blue-100 text-blue-700' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+              }`}
+            >
+              URL Externa
+            </button>
+            <button
+              type="button"
+              onClick={() => setUploadMode('file')}
+              className={`px-4 py-2 rounded-lg text-sm font-medium transition ${
+                uploadMode === 'file' ? 'bg-blue-100 text-blue-700' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+              }`}
+            >
+              Upload de Arquivo
+            </button>
+          </div>
+
           <div className="flex gap-2">
-            <input
-              type="url"
-              name="imageUrl"
-              required
-              value={formData.imageUrl}
-              onChange={handleInputChange}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
-              placeholder="https://..."
-            />
-            <div className="flex-shrink-0 w-10 h-10 bg-gray-100 rounded-lg flex items-center justify-center border border-gray-300">
+            {uploadMode === 'url' ? (
+              <input
+                type="url"
+                name="imageUrl"
+                required={!formData.imageUrl}
+                value={formData.imageUrl}
+                onChange={handleInputChange}
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
+                placeholder="https://..."
+              />
+            ) : (
+              <div className="w-full relative">
+                <input
+                  type="file"
+                  accept="image/*"
+                  onChange={handleImageUpload}
+                  disabled={uploadingImage}
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
+                />
+                {uploadingImage && (
+                  <div className="absolute right-3 top-1/2 -translate-y-1/2">
+                    <Loader2 className="w-5 h-5 animate-spin text-blue-600" />
+                  </div>
+                )}
+              </div>
+            )}
+            
+            <div className="flex-shrink-0 w-10 h-10 bg-gray-100 rounded-lg flex items-center justify-center border border-gray-300 overflow-hidden">
               {formData.imageUrl ? (
-                <img src={formData.imageUrl} alt="Preview" className="w-full h-full object-cover rounded-lg" />
+                <img src={formData.imageUrl} alt="Preview" className="w-full h-full object-cover" />
               ) : (
                 <ImageIcon className="w-5 h-5 text-gray-400" />
               )}
             </div>
           </div>
+          {uploadMode === 'file' && (
+            <p className="text-xs text-gray-500 mt-1">
+              *Requer bucket 'reviews' configurado no Supabase Storage como público.
+            </p>
+          )}
         </div>
 
         <div className="col-span-2">
