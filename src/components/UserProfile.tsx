@@ -1,10 +1,20 @@
 import React, { useState, useEffect } from 'react';
 import { supabase } from '../lib/supabase';
-import { User, Mail, Calendar, LogOut } from 'lucide-react';
+import { User, Mail, Calendar, LogOut, Edit, Trash2, Eye } from 'lucide-react';
+
+interface Review {
+  id: string;
+  title: string;
+  created_at: string;
+  rating: number;
+  slug: string;
+}
 
 export const UserProfile: React.FC = () => {
   const [session, setSession] = useState<any>(null);
   const [loading, setLoading] = useState(true);
+  const [userReviews, setUserReviews] = useState<Review[]>([]);
+  const [reviewsLoading, setReviewsLoading] = useState(true);
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
@@ -12,10 +22,48 @@ export const UserProfile: React.FC = () => {
         window.location.href = '/login';
       } else {
         setSession(session);
+        fetchUserReviews(session.user.id);
       }
       setLoading(false);
     });
   }, []);
+
+  const fetchUserReviews = async (userId: string) => {
+    try {
+      const { data, error } = await supabase
+        .from('reviews')
+        .select('id, title, created_at, rating, slug')
+        .eq('author_id', userId)
+        .order('created_at', { ascending: false });
+
+      if (error) throw error;
+      setUserReviews(data || []);
+    } catch (error) {
+      console.error('Erro ao buscar reviews do usuário:', error);
+    } finally {
+      setReviewsLoading(false);
+    }
+  };
+
+  const handleDeleteReview = async (reviewId: string) => {
+    if (!confirm('Tem certeza que deseja excluir este review? Esta ação não pode ser desfeita.')) {
+      return;
+    }
+
+    try {
+      const { error } = await supabase
+        .from('reviews')
+        .delete()
+        .eq('id', reviewId);
+
+      if (error) throw error;
+
+      setUserReviews(userReviews.filter(r => r.id !== reviewId));
+      alert('Review excluído com sucesso!');
+    } catch (error: any) {
+      alert('Erro ao excluir review: ' + error.message);
+    }
+  };
 
   const handleLogout = async () => {
     await supabase.auth.signOut();
@@ -29,67 +77,132 @@ export const UserProfile: React.FC = () => {
   if (!session) return null;
 
   return (
-    <div className="max-w-2xl mx-auto bg-white rounded-2xl shadow-lg overflow-hidden">
-      <div className="bg-gradient-to-r from-blue-600 to-indigo-700 px-8 py-10 text-white text-center">
-        <div className="w-24 h-24 bg-white text-blue-600 rounded-full flex items-center justify-center text-4xl font-bold mx-auto mb-4 shadow-xl">
-          {session.user.email?.[0].toUpperCase()}
+    <div className="max-w-4xl mx-auto space-y-8">
+      {/* Profile Card */}
+      <div className="bg-white rounded-2xl shadow-lg overflow-hidden">
+        <div className="bg-gradient-to-r from-blue-600 to-indigo-700 px-8 py-10 text-white text-center">
+          <div className="w-24 h-24 bg-white text-blue-600 rounded-full flex items-center justify-center text-4xl font-bold mx-auto mb-4 shadow-xl">
+            {session.user.email?.[0].toUpperCase()}
+          </div>
+          <h1 className="text-2xl font-bold">{session.user.email}</h1>
+          <p className="text-blue-100 opacity-80 text-sm mt-1">Membro TechOffers</p>
         </div>
-        <h1 className="text-2xl font-bold">{session.user.email}</h1>
-        <p className="text-blue-100 opacity-80 text-sm mt-1">Membro TechOffers</p>
+
+        <div className="p-8">
+          <h2 className="text-lg font-semibold text-gray-900 mb-6 border-b border-gray-100 pb-2">Informações da Conta</h2>
+          
+          <div className="grid md:grid-cols-2 gap-6">
+            <div className="flex items-start gap-4">
+              <div className="bg-blue-50 p-3 rounded-lg">
+                <Mail className="w-6 h-6 text-blue-600" />
+              </div>
+              <div>
+                <p className="text-sm text-gray-500 font-medium">E-mail</p>
+                <p className="text-gray-900">{session.user.email}</p>
+              </div>
+            </div>
+
+            <div className="flex items-start gap-4">
+              <div className="bg-purple-50 p-3 rounded-lg">
+                <Calendar className="w-6 h-6 text-purple-600" />
+              </div>
+              <div>
+                <p className="text-sm text-gray-500 font-medium">Membro desde</p>
+                <p className="text-gray-900">
+                  {new Date(session.user.created_at).toLocaleDateString('pt-BR', {
+                    day: 'numeric',
+                    month: 'long',
+                    year: 'numeric'
+                  })}
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <div className="mt-8 pt-6 border-t border-gray-100">
+            <button
+              onClick={handleLogout}
+              className="flex items-center gap-2 text-red-600 hover:text-red-800 font-medium transition"
+            >
+              <LogOut className="w-5 h-5" />
+              Sair da Conta
+            </button>
+          </div>
+        </div>
       </div>
 
-      <div className="p-8">
-        <h2 className="text-lg font-semibold text-gray-900 mb-6 border-b border-gray-100 pb-2">Informações da Conta</h2>
-        
-        <div className="space-y-6">
-          <div className="flex items-start gap-4">
-            <div className="bg-blue-50 p-3 rounded-lg">
-              <Mail className="w-6 h-6 text-blue-600" />
-            </div>
-            <div>
-              <p className="text-sm text-gray-500 font-medium">E-mail</p>
-              <p className="text-gray-900">{session.user.email}</p>
-            </div>
-          </div>
-
-          <div className="flex items-start gap-4">
-            <div className="bg-purple-50 p-3 rounded-lg">
-              <Calendar className="w-6 h-6 text-purple-600" />
-            </div>
-            <div>
-              <p className="text-sm text-gray-500 font-medium">Membro desde</p>
-              <p className="text-gray-900">
-                {new Date(session.user.created_at).toLocaleDateString('pt-BR', {
-                  day: 'numeric',
-                  month: 'long',
-                  year: 'numeric'
-                })}
-              </p>
-            </div>
-          </div>
-
-          <div className="flex items-start gap-4">
-            <div className="bg-gray-50 p-3 rounded-lg">
-              <User className="w-6 h-6 text-gray-600" />
-            </div>
-            <div>
-              <p className="text-sm text-gray-500 font-medium">ID do Usuário</p>
-              <p className="text-gray-900 font-mono text-xs bg-gray-100 px-2 py-1 rounded mt-1 inline-block">
-                {session.user.id}
-              </p>
-            </div>
-          </div>
-        </div>
-
-        <div className="mt-10 pt-6 border-t border-gray-100">
-          <button
-            onClick={handleLogout}
-            className="w-full flex items-center justify-center gap-2 bg-red-50 text-red-600 py-3 rounded-xl font-semibold hover:bg-red-100 transition"
+      {/* My Reviews Section */}
+      <div className="bg-white rounded-2xl shadow-lg overflow-hidden p-8">
+        <div className="flex justify-between items-center mb-6 border-b border-gray-100 pb-4">
+          <h2 className="text-xl font-bold text-gray-900">Meus Reviews</h2>
+          <a 
+            href="/admin/novo-review" 
+            className="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-bold hover:bg-blue-700 transition"
           >
-            <LogOut className="w-5 h-5" />
-            Sair da Conta
-          </button>
+            Novo Review
+          </a>
         </div>
+
+        {reviewsLoading ? (
+          <div className="text-center py-10 text-gray-500">Carregando reviews...</div>
+        ) : userReviews.length === 0 ? (
+          <div className="text-center py-10 bg-gray-50 rounded-xl border border-dashed border-gray-300">
+            <p className="text-gray-500 mb-4">Você ainda não publicou nenhum review.</p>
+            <a href="/admin/novo-review" className="text-blue-600 font-medium hover:underline">Começar agora</a>
+          </div>
+        ) : (
+          <div className="overflow-x-auto">
+            <table className="w-full text-left border-collapse">
+              <thead>
+                <tr className="border-b border-gray-200">
+                  <th className="py-3 px-4 font-semibold text-gray-700">Título</th>
+                  <th className="py-3 px-4 font-semibold text-gray-700">Data</th>
+                  <th className="py-3 px-4 font-semibold text-gray-700">Nota</th>
+                  <th className="py-3 px-4 font-semibold text-gray-700 text-right">Ações</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-gray-100">
+                {userReviews.map((review) => (
+                  <tr key={review.id} className="hover:bg-gray-50 transition">
+                    <td className="py-3 px-4 text-gray-900 font-medium">{review.title}</td>
+                    <td className="py-3 px-4 text-gray-500 text-sm">
+                      {new Date(review.created_at).toLocaleDateString('pt-BR')}
+                    </td>
+                    <td className="py-3 px-4">
+                      <span className="bg-blue-100 text-blue-800 text-xs font-bold px-2 py-1 rounded">
+                        {review.rating}
+                      </span>
+                    </td>
+                    <td className="py-3 px-4 text-right space-x-2">
+                      <a 
+                        href={`/reviews/${review.slug}`} 
+                        target="_blank"
+                        className="inline-flex p-2 text-gray-500 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition"
+                        title="Ver"
+                      >
+                        <Eye className="w-4 h-4" />
+                      </a>
+                      <a 
+                        href={`/admin/editar/${review.id}`} 
+                        className="inline-flex p-2 text-gray-500 hover:text-amber-600 hover:bg-amber-50 rounded-lg transition"
+                        title="Editar"
+                      >
+                        <Edit className="w-4 h-4" />
+                      </a>
+                      <button 
+                        onClick={() => handleDeleteReview(review.id)}
+                        className="inline-flex p-2 text-gray-500 hover:text-red-600 hover:bg-red-50 rounded-lg transition"
+                        title="Excluir"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
       </div>
     </div>
   );

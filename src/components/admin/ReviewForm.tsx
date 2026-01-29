@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { supabase } from '../../lib/supabase';
 import { Plus, Trash2, Save, Image as ImageIcon, Loader2, Upload, Link as LinkIcon } from 'lucide-react';
 
@@ -7,8 +7,13 @@ interface Spec {
   value: string;
 }
 
-export const ReviewForm: React.FC = () => {
+interface ReviewFormProps {
+  reviewId?: string;
+}
+
+export const ReviewForm: React.FC<ReviewFormProps> = ({ reviewId }) => {
   const [loading, setLoading] = useState(false);
+  const [fetching, setFetching] = useState(!!reviewId);
   const [success, setSuccess] = useState(false);
   const [uploadMode, setUploadMode] = useState<'url' | 'file'>('url');
   const [uploading, setUploading] = useState(false);
@@ -24,6 +29,50 @@ export const ReviewForm: React.FC = () => {
     category: 'Outros',
   });
   const [specs, setSpecs] = useState<Spec[]>([{ key: '', value: '' }]);
+
+  useEffect(() => {
+    if (reviewId) {
+      fetchReviewData(reviewId);
+    }
+  }, [reviewId]);
+
+  const fetchReviewData = async (id: string) => {
+    try {
+      const { data, error } = await supabase
+        .from('reviews')
+        .select('*')
+        .eq('id', id)
+        .single();
+
+      if (error) throw error;
+
+      if (data) {
+        setFormData({
+          title: data.title,
+          content: data.content,
+          rating: data.rating.toString(),
+          affiliateLink: data.affiliate_link,
+          imageUrl: data.image_url,
+          summary: data.summary || '',
+          price: data.price || '',
+          category: data.category || 'Outros',
+        });
+
+        if (data.technical_specs) {
+          const loadedSpecs = Object.entries(data.technical_specs).map(([key, value]) => ({
+            key,
+            value: String(value),
+          }));
+          setSpecs(loadedSpecs.length > 0 ? loadedSpecs : [{ key: '', value: '' }]);
+        }
+      }
+    } catch (error) {
+      console.error('Erro ao carregar review:', error);
+      alert('Erro ao carregar dados do review.');
+    } finally {
+      setFetching(false);
+    }
+  };
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
@@ -102,7 +151,7 @@ export const ReviewForm: React.FC = () => {
 
       const slug = generateSlug(formData.title);
 
-      const { error } = await supabase.from('reviews').insert({
+      const reviewData = {
         title: formData.title,
         content: formData.content,
         rating: parseFloat(formData.rating),
@@ -114,22 +163,44 @@ export const ReviewForm: React.FC = () => {
         price: formData.price,
         category: formData.category,
         slug: slug,
-      });
+      };
+
+      let error;
+
+      if (reviewId) {
+        // Update existing review
+        const { error: updateError } = await supabase
+          .from('reviews')
+          .update(reviewData)
+          .eq('id', reviewId);
+        error = updateError;
+      } else {
+        // Create new review
+        const { error: insertError } = await supabase
+          .from('reviews')
+          .insert(reviewData);
+        error = insertError;
+      }
 
       if (error) throw error;
 
       setSuccess(true);
-      setFormData({
-        title: '',
-        content: '',
-        rating: '',
-        affiliateLink: '',
-        imageUrl: '',
-        summary: '',
-        price: '',
-        category: 'Outros',
-      });
-      setSpecs([{ key: '', value: '' }]);
+      
+      if (!reviewId) {
+        // Only reset form if creating new review
+        setFormData({
+          title: '',
+          content: '',
+          rating: '',
+          affiliateLink: '',
+          imageUrl: '',
+          summary: '',
+          price: '',
+          category: 'Outros',
+        });
+        setSpecs([{ key: '', value: '' }]);
+      }
+      
       window.scrollTo(0, 0);
     } catch (error: any) {
       alert('Erro ao salvar review: ' + error.message);
@@ -138,17 +209,29 @@ export const ReviewForm: React.FC = () => {
     }
   };
 
+  if (fetching) {
+    return (
+      <div className="flex justify-center items-center py-20">
+        <Loader2 className="w-8 h-8 animate-spin text-blue-600" />
+      </div>
+    );
+  }
+
   return (
     <form onSubmit={handleSubmit} className="bg-white rounded-xl shadow-lg p-6 md:p-8 max-w-4xl mx-auto">
       <div className="mb-8 border-b border-gray-100 pb-4">
-        <h2 className="text-2xl font-bold text-gray-900">Novo Review de Hardware</h2>
-        <p className="text-gray-500">Preencha os dados abaixo para publicar uma nova análise.</p>
+        <h2 className="text-2xl font-bold text-gray-900">
+          {reviewId ? 'Editar Review' : 'Novo Review de Hardware'}
+        </h2>
+        <p className="text-gray-500">
+          {reviewId ? 'Atualize os dados abaixo.' : 'Preencha os dados abaixo para publicar uma nova análise.'}
+        </p>
       </div>
 
       {success && (
         <div className="mb-6 bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded-lg flex items-center gap-2">
           <Save className="w-5 h-5" />
-          Review publicado com sucesso!
+          Review {reviewId ? 'atualizado' : 'publicado'} com sucesso!
         </div>
       )}
 
@@ -380,7 +463,7 @@ export const ReviewForm: React.FC = () => {
           ) : (
             <>
               <Save className="w-5 h-5" />
-              Publicar Review
+              {reviewId ? 'Atualizar Review' : 'Publicar Review'}
             </>
           )}
         </button>
