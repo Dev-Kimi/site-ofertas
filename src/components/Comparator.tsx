@@ -4,7 +4,7 @@ import { Search, ArrowRightLeft, Check, X, ExternalLink, ChevronDown } from 'luc
 
 interface Product {
   id: string;
-  titulo: string;
+  title: string;
   specs_tecnicas: Record<string, string>;
   link_afiliado: string;
   imagem_url: string;
@@ -29,8 +29,8 @@ export const Comparator: React.FC = () => {
     try {
       const { data, error } = await supabase
         .from('reviews')
-        .select('id, titulo, specs_tecnicas, link_afiliado, imagem_url, nota')
-        .order('criado_em', { ascending: false });
+        .select('id, title, specs_tecnicas, link_afiliado, imagem_url, nota')
+        .order('created_at', { ascending: false });
 
       if (error) throw error;
       if (data) setProducts(data);
@@ -43,7 +43,7 @@ export const Comparator: React.FC = () => {
 
   const filterProducts = (search: string) => {
     return products.filter(p => 
-      p.titulo.toLowerCase().includes(search.toLowerCase())
+      p.title.toLowerCase().includes(search.toLowerCase())
     );
   };
 
@@ -101,12 +101,12 @@ export const Comparator: React.FC = () => {
           </button>
           <div className="aspect-video w-full bg-gray-100 rounded-lg mb-4 overflow-hidden flex items-center justify-center">
             {selected.imagem_url ? (
-              <img src={selected.imagem_url} alt={selected.titulo} className="w-full h-full object-cover" />
+              <img src={selected.imagem_url} alt={selected.title} className="w-full h-full object-cover" />
             ) : (
               <span className="text-gray-400">Sem imagem</span>
             )}
           </div>
-          <h3 className="font-bold text-gray-900 line-clamp-2 h-12">{selected.titulo}</h3>
+          <h3 className="font-bold text-gray-900 line-clamp-2 h-12">{selected.title}</h3>
           <div className="mt-2 flex items-center gap-2">
             <span className="bg-blue-100 text-blue-800 text-xs font-bold px-2 py-1 rounded">
               Nota: {selected.nota}
@@ -154,7 +154,7 @@ export const Comparator: React.FC = () => {
                         {product.imagem_url && <img src={product.imagem_url} alt="" className="w-full h-full object-cover" />}
                       </div>
                       <div>
-                        <div className="font-medium text-gray-900 line-clamp-1">{product.titulo}</div>
+                        <div className="font-medium text-gray-900 line-clamp-1">{product.title}</div>
                         <div className="text-xs text-gray-500">Nota: {product.nota}</div>
                       </div>
                     </button>
@@ -195,8 +195,8 @@ export const Comparator: React.FC = () => {
         <div className="bg-white rounded-2xl shadow-lg border border-gray-200 overflow-hidden">
           <div className="grid grid-cols-3 bg-gray-50 border-b border-gray-200">
             <div className="p-4 font-bold text-gray-500 text-sm uppercase tracking-wider flex items-center">Especificação</div>
-            <div className="p-4 font-bold text-gray-900 text-center border-l border-gray-200">{product1.titulo}</div>
-            <div className="p-4 font-bold text-gray-900 text-center border-l border-gray-200">{product2.titulo}</div>
+            <div className="p-4 font-bold text-gray-900 text-center border-l border-gray-200">{product1.title}</div>
+            <div className="p-4 font-bold text-gray-900 text-center border-l border-gray-200">{product2.title}</div>
           </div>
 
           <div className="divide-y divide-gray-100">
