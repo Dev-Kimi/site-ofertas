@@ -11,6 +11,8 @@ export const RegisterForm: React.FC = () => {
 
   const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (loading) return;
+    
     setLoading(true);
     setErrorMsg(null);
     
@@ -35,7 +37,15 @@ export const RegisterForm: React.FC = () => {
       setSent(true);
     } catch (error: any) {
       console.error('Erro no cadastro:', error);
-      setErrorMsg(error.message || 'Ocorreu um erro ao tentar criar a conta. Tente novamente.');
+      
+      let message = error.message || 'Ocorreu um erro ao tentar criar a conta. Tente novamente.';
+      
+      // Tratamento específico para Rate Limit
+      if (message.toLowerCase().includes('rate limit') || message.toLowerCase().includes('too many requests')) {
+        message = 'Muitas tentativas recentes. Por favor, aguarde alguns minutos antes de tentar novamente.';
+      }
+
+      setErrorMsg(message);
     } finally {
       setLoading(false);
     }
@@ -73,7 +83,7 @@ export const RegisterForm: React.FC = () => {
         <div className="mb-6 bg-red-50 border border-red-200 rounded-lg p-4 flex items-start gap-3 text-left">
           <AlertTriangle className="w-5 h-5 text-red-600 flex-shrink-0 mt-0.5" />
           <div>
-            <h3 className="text-sm font-semibold text-red-800">Erro ao cadastrar</h3>
+            <h3 className="text-sm font-semibold text-red-800">Atenção</h3>
             <p className="text-sm text-red-700 mt-1">{errorMsg}</p>
           </div>
         </div>
