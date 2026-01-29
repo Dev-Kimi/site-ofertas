@@ -183,7 +183,7 @@ export const UserProfile: React.FC = () => {
                         <Eye className="w-4 h-4" />
                       </a>
                       <a 
-                        href={`/admin/editar/${review.id}`} 
+                        href={`/admin/editar?id=${review.id}`} 
                         className="inline-flex p-2 text-gray-500 hover:text-amber-600 hover:bg-amber-50 rounded-lg transition"
                         title="Editar"
                       >

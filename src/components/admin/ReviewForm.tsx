@@ -11,9 +11,10 @@ interface ReviewFormProps {
   reviewId?: string;
 }
 
-export const ReviewForm: React.FC<ReviewFormProps> = ({ reviewId }) => {
+export const ReviewForm: React.FC<ReviewFormProps> = ({ reviewId: propReviewId }) => {
+  const [reviewId, setReviewId] = useState<string | undefined>(propReviewId);
   const [loading, setLoading] = useState(false);
-  const [fetching, setFetching] = useState(!!reviewId);
+  const [fetching, setFetching] = useState(false);
   const [success, setSuccess] = useState(false);
   const [uploadMode, setUploadMode] = useState<'url' | 'file'>('url');
   const [uploading, setUploading] = useState(false);
@@ -31,7 +32,19 @@ export const ReviewForm: React.FC<ReviewFormProps> = ({ reviewId }) => {
   const [specs, setSpecs] = useState<Spec[]>([{ key: '', value: '' }]);
 
   useEffect(() => {
+    // If no prop provided, check URL query params
+    if (!propReviewId) {
+      const params = new URLSearchParams(window.location.search);
+      const id = params.get('id');
+      if (id) {
+        setReviewId(id);
+      }
+    }
+  }, [propReviewId]);
+
+  useEffect(() => {
     if (reviewId) {
+      setFetching(true);
       fetchReviewData(reviewId);
     }
   }, [reviewId]);
