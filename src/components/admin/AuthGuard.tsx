@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { supabase } from '../../lib/supabase';
-import { Lock, Mail, Loader2 } from 'lucide-react';
+import { Lock, Mail, Loader2, AlertTriangle } from 'lucide-react';
 
 interface AuthGuardProps {
   children: React.ReactNode;
@@ -12,10 +12,22 @@ export const AuthGuard: React.FC<AuthGuardProps> = ({ children }) => {
   const [email, setEmail] = useState('');
   const [isMagicLinkSent, setIsMagicLinkSent] = useState(false);
   const [authLoading, setAuthLoading] = useState(false);
+  const [configError, setConfigError] = useState(false);
 
   React.useEffect(() => {
+    // Check if Supabase is configured correctly
+    const supabaseUrl = import.meta.env.PUBLIC_SUPABASE_URL;
+    if (!supabaseUrl || supabaseUrl.includes('placeholder')) {
+      setConfigError(true);
+      setLoading(false);
+      return;
+    }
+
     supabase.auth.getSession().then(({ data: { session } }) => {
       setSession(session);
+      setLoading(false);
+    }).catch((err) => {
+      console.error('Error checking session:', err);
       setLoading(false);
     });
 
@@ -31,25 +43,50 @@ export const AuthGuard: React.FC<AuthGuardProps> = ({ children }) => {
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setAuthLoading(true);
-    const { error } = await supabase.auth.signInWithOtp({
-      email,
-      options: {
-        emailRedirectTo: window.location.href,
-      },
-    });
+    try {
+      const { error } = await supabase.auth.signInWithOtp({
+        email,
+        options: {
+          emailRedirectTo: window.location.href,
+        },
+      });
 
-    if (error) {
-      alert(error.message);
-    } else {
-      setIsMagicLinkSent(true);
+      if (error) {
+        alert(error.message);
+      } else {
+        setIsMagicLinkSent(true);
+      }
+    } catch (error: any) {
+      alert('Erro ao tentar login: ' + error.message);
+    } finally {
+      setAuthLoading(false);
     }
-    setAuthLoading(false);
   };
 
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50">
         <Loader2 className="w-8 h-8 animate-spin text-blue-600" />
+      </div>
+    );
+  }
+
+  if (configError) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4">
+        <div className="max-w-md w-full bg-white rounded-xl shadow-lg p-8 text-center">
+          <div className="bg-yellow-100 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
+            <AlertTriangle className="w-8 h-8 text-yellow-600" />
+          </div>
+          <h2 className="text-2xl font-bold text-gray-900 mb-2">Configuração Necessária</h2>
+          <p className="text-gray-600 mb-6">
+            As variáveis de ambiente do Supabase não foram configuradas corretamente na Vercel.
+          </p>
+          <div className="bg-gray-100 p-4 rounded-lg text-left text-sm font-mono text-gray-700 overflow-x-auto">
+            PUBLIC_SUPABASE_URL<br/>
+            PUBLIC_SUPABASE_ANON_KEY
+          </div>
+        </div>
       </div>
     );
   }
