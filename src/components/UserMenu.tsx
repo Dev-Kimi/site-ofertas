@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { supabase } from '../lib/supabase';
-import { User, LogOut, LayoutDashboard, Loader2, LogIn } from 'lucide-react';
+import { User, LogOut, LayoutDashboard, LogIn, UserPlus } from 'lucide-react';
 
 export const UserMenu: React.FC = () => {
   const [session, setSession] = useState<any>(null);
@@ -32,13 +32,22 @@ export const UserMenu: React.FC = () => {
 
   if (!session) {
     return (
-      <a 
-        href="/login" 
-        className="flex items-center gap-2 text-gray-700 hover:text-blue-600 font-medium transition"
-      >
-        <LogIn className="w-5 h-5" />
-        <span className="hidden md:inline">Entrar</span>
-      </a>
+      <div className="flex items-center gap-4">
+        <a 
+          href="/login" 
+          className="flex items-center gap-2 text-gray-700 hover:text-blue-600 font-medium transition"
+        >
+          <LogIn className="w-5 h-5" />
+          <span className="hidden md:inline">Entrar</span>
+        </a>
+        <a 
+          href="/cadastro" 
+          className="hidden md:flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-lg font-medium hover:bg-blue-700 transition shadow-sm"
+        >
+          <UserPlus className="w-4 h-4" />
+          Cadastrar
+        </a>
+      </div>
     );
   }
 

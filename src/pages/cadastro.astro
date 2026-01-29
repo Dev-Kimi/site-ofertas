@@ -1,0 +1,20 @@
+---
+import MainLayout from '../layouts/MainLayout.astro';
+import { RegisterForm } from '../components/RegisterForm';
+
+const title = "Cadastro | TechOffers";
+---
+
+<MainLayout title={title}>
+  <div class="min-h-[80vh] flex items-center justify-center bg-gray-50 py-12 px-4 relative overflow-hidden">
+    {/* Background decoration */}
+    <div class="absolute top-0 left-0 w-full h-full overflow-hidden z-0 pointer-events-none">
+      <div class="absolute -top-24 -right-24 w-96 h-96 bg-green-200 rounded-full mix-blend-multiply filter blur-3xl opacity-30"></div>
+      <div class="absolute -bottom-24 -left-24 w-96 h-96 bg-blue-200 rounded-full mix-blend-multiply filter blur-3xl opacity-30"></div>
+    </div>
+
+    <div class="relative z-10 w-full">
+      <RegisterForm client:load />
+    </div>
+  </div>
+</MainLayout>

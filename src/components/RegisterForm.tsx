@@ -1,21 +1,14 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { supabase } from '../lib/supabase';
-import { Mail, Loader2, ArrowRight, CheckCircle } from 'lucide-react';
+import { Mail, User, Loader2, ArrowRight, CheckCircle } from 'lucide-react';
 
-export const LoginForm: React.FC = () => {
+export const RegisterForm: React.FC = () => {
   const [email, setEmail] = useState('');
+  const [fullName, setFullName] = useState('');
   const [loading, setLoading] = useState(false);
   const [sent, setSent] = useState(false);
 
-  useEffect(() => {
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      if (session) {
-        window.location.href = '/perfil';
-      }
-    });
-  }, []);
-
-  const handleLogin = async (e: React.FormEvent) => {
+  const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
     
@@ -24,6 +17,9 @@ export const LoginForm: React.FC = () => {
         email,
         options: {
           emailRedirectTo: `${window.location.origin}/perfil`,
+          data: {
+            full_name: fullName,
+          }
         },
       });
 
@@ -44,14 +40,14 @@ export const LoginForm: React.FC = () => {
         </div>
         <h2 className="text-2xl font-bold text-gray-900 mb-2">Verifique seu e-mail</h2>
         <p className="text-gray-600 mb-6 max-w-md mx-auto">
-          Enviamos um link de acesso para <strong>{email}</strong>.<br/>
-          Clique no link para entrar na sua conta.
+          Enviamos um link de confirmação para <strong>{email}</strong>.<br/>
+          Clique no link para ativar sua conta.
         </p>
         <button 
           onClick={() => setSent(false)}
           className="text-blue-600 hover:text-blue-800 font-medium text-sm"
         >
-          Tentar outro e-mail
+          Corrigir e-mail
         </button>
       </div>
     );
@@ -60,11 +56,29 @@ export const LoginForm: React.FC = () => {
   return (
     <div className="max-w-md w-full mx-auto bg-white rounded-2xl shadow-xl p-8 md:p-10">
       <div className="text-center mb-8">
-        <h1 className="text-3xl font-bold text-gray-900 mb-2">Bem-vindo de volta</h1>
-        <p className="text-gray-500">Digite seu e-mail para entrar</p>
+        <h1 className="text-3xl font-bold text-gray-900 mb-2">Crie sua conta</h1>
+        <p className="text-gray-500">Junte-se à comunidade TechOffers</p>
       </div>
 
-      <form onSubmit={handleLogin} className="space-y-6">
+      <form onSubmit={handleRegister} className="space-y-6">
+        <div>
+          <label htmlFor="fullName" className="block text-sm font-medium text-gray-700 mb-2">
+            Nome Completo
+          </label>
+          <div className="relative">
+            <User className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+            <input
+              type="text"
+              id="fullName"
+              required
+              value={fullName}
+              onChange={(e) => setFullName(e.target.value)}
+              className="w-full pl-12 pr-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition bg-gray-50 focus:bg-white"
+              placeholder="Seu nome"
+            />
+          </div>
+        </div>
+
         <div>
           <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-2">
             E-mail
@@ -91,11 +105,11 @@ export const LoginForm: React.FC = () => {
           {loading ? (
             <>
               <Loader2 className="w-5 h-5 animate-spin" />
-              Enviando...
+              Criando conta...
             </>
           ) : (
             <>
-              Entrar <ArrowRight className="w-5 h-5" />
+              Cadastrar <ArrowRight className="w-5 h-5" />
             </>
           )}
         </button>
@@ -103,9 +117,9 @@ export const LoginForm: React.FC = () => {
 
       <div className="mt-8 text-center">
         <p className="text-sm text-gray-600">
-          Não tem uma conta?{' '}
-          <a href="/cadastro" className="text-blue-600 hover:text-blue-800 font-semibold hover:underline">
-            Cadastre-se
+          Já tem uma conta?{' '}
+          <a href="/login" className="text-blue-600 hover:text-blue-800 font-semibold hover:underline">
+            Entrar agora
           </a>
         </p>
       </div>
