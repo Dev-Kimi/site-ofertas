@@ -4,15 +4,7 @@ import { supabase } from '../../lib/supabase';
 import ReactMarkdown from 'react-markdown';
 import { Calendar, User, Star, ShoppingCart, Check, X, ArrowRight } from 'lucide-react';
 
-export async function getStaticPaths() {
-  const { data: reviews } = await supabase
-    .from('reviews')
-    .select('slug');
-
-  return (reviews || []).map((review) => ({
-    params: { slug: review.slug },
-  }));
-}
+export const prerender = false;
 
 const { slug } = Astro.params;
 
