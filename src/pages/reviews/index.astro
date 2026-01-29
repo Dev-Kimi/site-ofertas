@@ -1,0 +1,68 @@
+---
+import MainLayout from '../../layouts/MainLayout.astro';
+import { ReviewCard } from '../../components/ReviewCard';
+import { getCollection } from 'astro:content';
+
+const reviews = await getCollection('reviews');
+const sortedReviews = reviews.sort((a, b) => b.data.date.valueOf() - a.data.date.valueOf());
+
+// Get unique categories
+const categories = ['Todos', ...new Set(reviews.map(r => r.data.category))];
+
+const title = "Reviews de Hardware | TechOffers";
+const description = "Análises detalhadas de teclados, monitores, GPUs e periféricos para ajudar na sua escolha.";
+---
+
+<MainLayout title={title} description={description}>
+  <div class="bg-gray-50 min-h-screen pb-12">
+    {/* Header */}
+    <div class="bg-white border-b border-gray-200 py-12 mb-8">
+      <div class="container mx-auto px-4 text-center">
+        <h1 class="text-4xl font-bold text-gray-900 mb-4">Reviews de Hardware</h1>
+        <p class="text-xl text-gray-600 max-w-2xl mx-auto">
+          Nossas análises técnicas e imparciais para você montar o setup dos sonhos sem estourar o orçamento.
+        </p>
+      </div>
+    </div>
+
+    <div class="container mx-auto px-4">
+      {/* Filters (Visual only for now, could be made functional with client-side JS or query params) */}
+      <div class="flex flex-wrap justify-center gap-2 mb-12">
+        {categories.map(category => (
+          <a 
+            href={category === 'Todos' ? '/reviews' : `/reviews?category=${category}`}
+            class={`px-4 py-2 rounded-full text-sm font-medium transition-colors ${
+              category === 'Todos' 
+                ? 'bg-blue-600 text-white shadow-md' 
+                : 'bg-white text-gray-600 hover:bg-gray-100 border border-gray-200'
+            }`}
+          >
+            {category}
+          </a>
+        ))}
+      </div>
+
+      {/* Grid */}
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+        {sortedReviews.map(review => (
+          <a href={`/reviews/${review.slug}`} class="group block h-full">
+            <ReviewCard 
+              title={review.data.title}
+              image={review.data.image}
+              rating={review.data.rating}
+              summary={review.data.summary}
+              price={review.data.price}
+              affiliateLink={review.data.affiliateLink}
+            />
+          </a>
+        ))}
+      </div>
+
+      {sortedReviews.length === 0 && (
+        <div class="text-center py-20">
+          <p class="text-gray-500 text-lg">Nenhum review encontrado no momento.</p>
+        </div>
+      )}
+    </div>
+  </div>
+</MainLayout>
