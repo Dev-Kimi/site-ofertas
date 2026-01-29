@@ -88,7 +88,7 @@ export const Comparator: React.FC = () => {
     search: string, 
     setSearch: (s: string) => void,
     showDropdown: boolean,
-    setShowDropdown: (b: boolean)
+    setShowDropdown: (b: boolean) => void
   ) => (
     <div className="relative">
       {selected ? (
