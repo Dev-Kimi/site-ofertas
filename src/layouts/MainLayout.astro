@@ -1,5 +1,6 @@
 ---
 import { UserMenu } from '../components/UserMenu';
+import { ThemeToggle } from '../components/ThemeToggle';
 
 interface Props {
 	title: string;
@@ -47,26 +48,36 @@ const canonicalURL = new URL(Astro.url.pathname, Astro.site || 'http://localhost
 		{schema && (
 			<script type="application/ld+json" set:html={JSON.stringify(schema)} />
 		)}
+
+		<script is:inline>
+			// Check for saved theme preference or system preference
+			if (localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+				document.documentElement.classList.add('dark');
+			} else {
+				document.documentElement.classList.remove('dark');
+			}
+		</script>
 	</head>
-	<body class="bg-gray-50 text-gray-900 font-sans flex flex-col min-h-screen">
-		<header class="bg-white shadow-sm sticky top-0 z-50">
+	<body class="bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100 font-sans flex flex-col min-h-screen transition-colors duration-200">
+		<header class="bg-white dark:bg-gray-800 shadow-sm sticky top-0 z-50 transition-colors duration-200">
 			<nav class="container mx-auto px-4 py-4 flex justify-between items-center">
-				<a href="/" class="text-2xl font-bold text-blue-600 flex items-center gap-2">
+				<a href="/" class="text-2xl font-bold text-blue-600 dark:text-blue-400 flex items-center gap-2">
 					<svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon></svg>
 					TechOffers
 				</a>
 				
 				<div class="hidden md:flex space-x-8">
-					<a href="/" class="hover:text-blue-600 transition font-medium text-gray-700">Início</a>
-					<a href="/reviews" class="hover:text-blue-600 transition font-medium text-gray-700">Reviews</a>
-					<a href="/cupons" class="hover:text-blue-600 transition font-medium text-gray-700">Cupons</a>
-					<a href="/comparador" class="hover:text-blue-600 transition font-medium text-gray-700">Comparador</a>
+					<a href="/" class="hover:text-blue-600 dark:hover:text-blue-400 transition font-medium text-gray-700 dark:text-gray-300">Início</a>
+					<a href="/reviews" class="hover:text-blue-600 dark:hover:text-blue-400 transition font-medium text-gray-700 dark:text-gray-300">Reviews</a>
+					<a href="/cupons" class="hover:text-blue-600 dark:hover:text-blue-400 transition font-medium text-gray-700 dark:text-gray-300">Cupons</a>
+					<a href="/comparador" class="hover:text-blue-600 dark:hover:text-blue-400 transition font-medium text-gray-700 dark:text-gray-300">Comparador</a>
 				</div>
 
 				<div class="flex items-center gap-4">
+					<ThemeToggle client:load />
 					<UserMenu client:load />
 					
-					<button class="md:hidden text-gray-600 focus:outline-none" aria-label="Menu">
+					<button class="md:hidden text-gray-600 dark:text-gray-300 focus:outline-none" aria-label="Menu">
 						<svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
 							<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16m-7 6h7" />
 						</svg>
@@ -79,7 +90,7 @@ const canonicalURL = new URL(Astro.url.pathname, Astro.site || 'http://localhost
 			<slot />
 		</main>
 
-		<footer class="bg-gray-900 text-gray-300 py-12 mt-auto">
+		<footer class="bg-gray-900 dark:bg-black text-gray-300 py-12 mt-auto">
 			<div class="container mx-auto px-4">
 				<div class="grid grid-cols-1 md:grid-cols-4 gap-8 mb-8">
 					<div class="col-span-1 md:col-span-1">
