@@ -73,6 +73,15 @@ export const ReviewForm: React.FC = () => {
     }
   };
 
+  const generateSlug = (title: string) => {
+    return title
+      .toLowerCase()
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .replace(/[^a-z0-9]+/g, '-')
+      .replace(/(^-|-$)+/g, '');
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
@@ -91,17 +100,20 @@ export const ReviewForm: React.FC = () => {
 
       if (!user) throw new Error('Usuário não autenticado');
 
+      const slug = generateSlug(formData.title);
+
       const { error } = await supabase.from('reviews').insert({
         title: formData.title,
         content: formData.content,
         rating: parseFloat(formData.rating),
         affiliate_link: formData.affiliateLink,
         image_url: formData.imageUrl,
-        specs: specsObject,
+        technical_specs: specsObject,
         author_id: user.id,
         summary: formData.summary,
         price: formData.price,
         category: formData.category,
+        slug: slug,
       });
 
       if (error) throw error;
