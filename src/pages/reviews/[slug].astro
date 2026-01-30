@@ -48,7 +48,7 @@ try {
         <h3 class="font-bold mb-2">Erro ao processar o conteúdo:</h3>
         <pre class="whitespace-pre-wrap text-sm">${parseError instanceof Error ? parseError.message : String(parseError)}</pre>
         <p class="mt-4 font-bold">Conteúdo Bruto (Debug):</p>
-        <pre class="whitespace-pre-wrap text-xs text-gray-600 bg-gray-100 p-2 rounded mt-2 max-h-40 overflow-auto">${sanitizeHtml(review.content)}</pre>
+        <pre class="whitespace-pre-wrap text-xs text-gray-600 bg-gray-100 p-2 rounded mt-2 max-h-40 overflow-auto">${review.content}</pre>
       </div>`;
     }
   }
