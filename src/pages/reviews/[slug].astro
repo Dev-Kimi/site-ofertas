@@ -43,7 +43,13 @@ try {
       });
     } catch (parseError) {
       console.error('[Markdown Error]', parseError);
-      contentHtml = '<p>Erro ao exibir o conteúdo.</p>';
+      // Show detailed error temporarily for debugging
+      contentHtml = `<div class="bg-red-50 border border-red-200 text-red-700 p-4 rounded-lg">
+        <h3 class="font-bold mb-2">Erro ao processar o conteúdo:</h3>
+        <pre class="whitespace-pre-wrap text-sm">${parseError instanceof Error ? parseError.message : String(parseError)}</pre>
+        <p class="mt-4 font-bold">Conteúdo Bruto (Debug):</p>
+        <pre class="whitespace-pre-wrap text-xs text-gray-600 bg-gray-100 p-2 rounded mt-2 max-h-40 overflow-auto">${sanitizeHtml(review.content)}</pre>
+      </div>`;
     }
   }
 
