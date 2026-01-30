@@ -34,7 +34,13 @@ try {
   if (review && review.content) {
     try {
       const rawHtml = await marked.parse(review.content);
-      contentHtml = DOMPurify.sanitize(rawHtml);
+      contentHtml = sanitizeHtml(rawHtml, {
+        allowedTags: sanitizeHtml.defaults.allowedTags.concat(['img', 'h1', 'h2']),
+        allowedAttributes: {
+          ...sanitizeHtml.defaults.allowedAttributes,
+          'img': ['src', 'alt', 'title', 'width', 'height', 'class']
+        }
+      });
     } catch (parseError) {
       console.error('[Markdown Error]', parseError);
       contentHtml = '<p>Erro ao exibir o conteúdo.</p>';
