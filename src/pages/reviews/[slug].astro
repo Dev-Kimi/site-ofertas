@@ -26,7 +26,16 @@ if (error || !review) {
 // Debug content
 console.log(`[Review Render] Slug: ${slug}, Content Length: ${review.content?.length || 0}`);
 
-const contentHtml = review.content ? DOMPurify.sanitize(await marked.parse(review.content)) : '';
+let contentHtml = '';
+try {
+  if (review.content) {
+    const rawHtml = await marked.parse(review.content);
+    contentHtml = DOMPurify.sanitize(rawHtml);
+  }
+} catch (e) {
+  console.error('[Review Render Error]', e);
+  contentHtml = '<p class="text-red-500">Erro ao renderizar o conteúdo.</p>';
+}
 
 const formattedDate = new Date(review.created_at).toLocaleDateString('pt-BR', {
   day: 'numeric',
