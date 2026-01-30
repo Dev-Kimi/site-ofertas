@@ -1,7 +1,8 @@
 ---
 import MainLayout from '../../layouts/MainLayout.astro';
 import { supabase } from '../../lib/supabase';
-import ReactMarkdown from 'react-markdown';
+import { marked } from 'marked';
+import DOMPurify from 'isomorphic-dompurify';
 import { Calendar, User, Star, ShoppingCart, Check, X, ArrowRight } from 'lucide-react';
 import { ReviewOwnerControls } from '../../components/ReviewOwnerControls';
 
@@ -21,6 +22,11 @@ const { data: review, error } = await supabase
 if (error || !review) {
   return Astro.redirect('/404');
 }
+
+// Debug content
+console.log(`[Review Render] Slug: ${slug}, Content Length: ${review.content?.length || 0}`);
+
+const contentHtml = review.content ? DOMPurify.sanitize(await marked.parse(review.content)) : '';
 
 const formattedDate = new Date(review.created_at).toLocaleDateString('pt-BR', {
   day: 'numeric',
@@ -148,8 +154,8 @@ const cons = ["Preço elevado", "Disponibilidade limitada"];
           <div class="lg:col-span-8 space-y-12">
             {/* Content Body */}
             <article class="prose prose-lg prose-blue dark:prose-invert max-w-none bg-white dark:bg-transparent">
-              {review.content ? (
-                <ReactMarkdown>{review.content}</ReactMarkdown>
+              {contentHtml ? (
+                <div set:html={contentHtml} />
               ) : (
                 <p class="text-gray-500 italic">Sem conteúdo disponível para este review.</p>
               )}

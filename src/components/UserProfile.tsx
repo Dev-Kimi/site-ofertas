@@ -58,8 +58,10 @@ export const UserProfile: React.FC = () => {
 
       if (error) throw error;
 
-      setUserReviews(userReviews.filter(r => r.id !== reviewId));
+      // Refresh list
+      fetchUserReviews(session.user.id);
       alert('Review excluído com sucesso!');
+      window.location.reload();
     } catch (error: any) {
       alert('Erro ao excluir review: ' + error.message);
     }
