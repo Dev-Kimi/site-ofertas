@@ -104,8 +104,8 @@ const cons = ["Preço elevado", "Disponibilidade limitada"];
             </div>
           </div>
 
-          <div class="flex flex-col items-center gap-4">
-            <div class="flex flex-col sm:flex-row justify-center gap-4">
+          <div className="flex flex-col items-center gap-4">
+            <div className="flex flex-col sm:flex-row justify-center gap-4">
               <a 
                 href={review.affiliate_link}
                 target="_blank"
@@ -148,7 +148,11 @@ const cons = ["Preço elevado", "Disponibilidade limitada"];
           <div class="lg:col-span-8 space-y-12">
             {/* Content Body */}
             <article class="prose prose-lg prose-blue dark:prose-invert max-w-none bg-white dark:bg-transparent">
-              <ReactMarkdown client:only="react">{review.content}</ReactMarkdown>
+              {review.content ? (
+                <ReactMarkdown>{review.content}</ReactMarkdown>
+              ) : (
+                <p class="text-gray-500 italic">Sem conteúdo disponível para este review.</p>
+              )}
             </article>
 
             {/* Pros & Cons */}
