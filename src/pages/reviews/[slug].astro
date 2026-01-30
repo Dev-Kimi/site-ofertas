@@ -10,32 +10,48 @@ export const prerender = false;
 
 const { slug } = Astro.params;
 
-// Get current user server-side
-const { data: { user } } = await supabase.auth.getUser();
+let review = null;
+let user = null;
+let contentHtml = '';
 
-const { data: review, error } = await supabase
-  .from('reviews')
-  .select('*, profiles(full_name)')
-  .eq('slug', slug)
-  .single();
+try {
+  // Get current user server-side (Safe check)
+  const authResponse = await supabase.auth.getUser();
+  user = authResponse.data.user;
 
-if (error || !review) {
+  const { data, error } = await supabase
+    .from('reviews')
+    .select('*, profiles(full_name)')
+    .eq('slug', slug)
+    .single();
+
+  if (error) {
+    console.error(`[Supabase Error] Slug: ${slug}`, error);
+  }
+  
+  review = data;
+
+  if (review && review.content) {
+    try {
+      const rawHtml = await marked.parse(review.content);
+      contentHtml = DOMPurify.sanitize(rawHtml);
+    } catch (parseError) {
+      console.error('[Markdown Error]', parseError);
+      contentHtml = '<p>Erro ao exibir o conteúdo.</p>';
+    }
+  }
+
+} catch (err) {
+  console.error('[Server Error] Unexpected error in [slug].astro', err);
+  return Astro.redirect('/404');
+}
+
+if (!review) {
   return Astro.redirect('/404');
 }
 
 // Debug content
 console.log(`[Review Render] Slug: ${slug}, Content Length: ${review.content?.length || 0}`);
-
-let contentHtml = '';
-try {
-  if (review.content) {
-    const rawHtml = await marked.parse(review.content);
-    contentHtml = DOMPurify.sanitize(rawHtml);
-  }
-} catch (e) {
-  console.error('[Review Render Error]', e);
-  contentHtml = '<p class="text-red-500">Erro ao renderizar o conteúdo.</p>';
-}
 
 const formattedDate = new Date(review.created_at).toLocaleDateString('pt-BR', {
   day: 'numeric',
