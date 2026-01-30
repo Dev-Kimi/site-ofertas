@@ -1,11 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { supabase } from '../lib/supabase';
-import { Mail, Loader2, ArrowRight, CheckCircle, AlertTriangle } from 'lucide-react';
+import { Mail, Lock, Loader2, ArrowRight, AlertTriangle } from 'lucide-react';
 
 export const LoginForm: React.FC = () => {
   const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
-  const [sent, setSent] = useState(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
   useEffect(() => {
@@ -30,19 +30,24 @@ export const LoginForm: React.FC = () => {
         throw new Error('Erro de configuração: Variáveis de ambiente do Supabase não encontradas.');
       }
 
-      const { error } = await supabase.auth.signInWithOtp({
+      const { data, error } = await supabase.auth.signInWithPassword({
         email,
-        options: {
-          emailRedirectTo: `${window.location.origin}/perfil`,
-        },
+        password,
       });
 
       if (error) throw error;
-      setSent(true);
+      
+      if (data.session) {
+        window.location.href = '/perfil';
+      }
     } catch (error: any) {
       console.error('Erro no login:', error);
       
       let message = error.message || 'Ocorreu um erro ao tentar entrar. Tente novamente.';
+      
+      if (message.includes('Invalid login credentials')) {
+        message = 'E-mail ou senha incorretos.';
+      }
       
       // Tratamento específico para Rate Limit
       if (message.toLowerCase().includes('rate limit') || message.toLowerCase().includes('too many requests')) {
@@ -55,32 +60,11 @@ export const LoginForm: React.FC = () => {
     }
   };
 
-  if (sent) {
-    return (
-      <div className="text-center py-8 animate-in fade-in duration-500">
-        <div className="bg-green-100 w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-6">
-          <CheckCircle className="w-10 h-10 text-green-600" />
-        </div>
-        <h2 className="text-2xl font-bold text-gray-900 mb-2">Verifique seu e-mail</h2>
-        <p className="text-gray-600 mb-6 max-w-md mx-auto">
-          Enviamos um link de acesso para <strong>{email}</strong>.<br/>
-          Clique no link para entrar na sua conta.
-        </p>
-        <button 
-          onClick={() => setSent(false)}
-          className="text-blue-600 hover:text-blue-800 font-medium text-sm"
-        >
-          Tentar outro e-mail
-        </button>
-      </div>
-    );
-  }
-
   return (
     <div className="max-w-md w-full mx-auto bg-white rounded-2xl shadow-xl p-8 md:p-10">
       <div className="text-center mb-8">
         <h1 className="text-3xl font-bold text-gray-900 mb-2">Bem-vindo de volta</h1>
-        <p className="text-gray-500">Digite seu e-mail para entrar</p>
+        <p className="text-gray-500">Digite seu e-mail e senha para entrar</p>
       </div>
 
       {errorMsg && (
@@ -112,6 +96,24 @@ export const LoginForm: React.FC = () => {
           </div>
         </div>
 
+        <div>
+          <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-2">
+            Senha
+          </label>
+          <div className="relative">
+            <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+            <input
+              type="password"
+              id="password"
+              required
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              className="w-full pl-12 pr-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition bg-gray-50 focus:bg-white"
+              placeholder="Sua senha"
+            />
+          </div>
+        </div>
+
         <button
           type="submit"
           disabled={loading}
@@ -120,7 +122,7 @@ export const LoginForm: React.FC = () => {
           {loading ? (
             <>
               <Loader2 className="w-5 h-5 animate-spin" />
-              Enviando...
+              Entrando...
             </>
           ) : (
             <>

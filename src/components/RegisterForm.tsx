@@ -1,9 +1,10 @@
 import React, { useState } from 'react';
 import { supabase } from '../lib/supabase';
-import { Mail, User, Loader2, ArrowRight, CheckCircle, AlertTriangle } from 'lucide-react';
+import { Mail, User, Lock, Loader2, ArrowRight, CheckCircle, AlertTriangle } from 'lucide-react';
 
 export const RegisterForm: React.FC = () => {
   const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
   const [fullName, setFullName] = useState('');
   const [loading, setLoading] = useState(false);
   const [sent, setSent] = useState(false);
@@ -23,10 +24,10 @@ export const RegisterForm: React.FC = () => {
         throw new Error('Erro de configuração: Variáveis de ambiente do Supabase não encontradas.');
       }
 
-      const { error } = await supabase.auth.signInWithOtp({
+      const { error } = await supabase.auth.signUp({
         email,
+        password,
         options: {
-          emailRedirectTo: `${window.location.origin}/perfil`,
           data: {
             full_name: fullName,
           }
@@ -57,16 +58,16 @@ export const RegisterForm: React.FC = () => {
         <div className="bg-green-100 w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-6">
           <CheckCircle className="w-10 h-10 text-green-600" />
         </div>
-        <h2 className="text-2xl font-bold text-gray-900 mb-2">Verifique seu e-mail</h2>
+        <h2 className="text-2xl font-bold text-gray-900 mb-2">Conta criada com sucesso!</h2>
         <p className="text-gray-600 mb-6 max-w-md mx-auto">
-          Enviamos um link de confirmação para <strong>{email}</strong>.<br/>
-          Clique no link para ativar sua conta.
+          Enviamos um e-mail de confirmação para <strong>{email}</strong>.<br/>
+          Por favor, verifique sua caixa de entrada para ativar sua conta.
         </p>
         <button 
-          onClick={() => setSent(false)}
+          onClick={() => window.location.href = '/login'}
           className="text-blue-600 hover:text-blue-800 font-medium text-sm"
         >
-          Corrigir e-mail
+          Ir para o login
         </button>
       </div>
     );
@@ -122,6 +123,25 @@ export const RegisterForm: React.FC = () => {
               onChange={(e) => setEmail(e.target.value)}
               className="w-full pl-12 pr-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition bg-gray-50 focus:bg-white"
               placeholder="seu@email.com"
+            />
+          </div>
+        </div>
+
+        <div>
+          <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-2">
+            Senha
+          </label>
+          <div className="relative">
+            <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+            <input
+              type="password"
+              id="password"
+              required
+              minLength={6}
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              className="w-full pl-12 pr-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition bg-gray-50 focus:bg-white"
+              placeholder="Sua senha secreta"
             />
           </div>
         </div>
