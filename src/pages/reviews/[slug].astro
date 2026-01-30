@@ -2,7 +2,7 @@
 import MainLayout from '../../layouts/MainLayout.astro';
 import { supabase } from '../../lib/supabase';
 import { marked } from 'marked';
-import DOMPurify from 'isomorphic-dompurify';
+import sanitizeHtml from 'sanitize-html';
 import { Calendar, User, Star, ShoppingCart, Check, X, ArrowRight } from 'lucide-react';
 import { ReviewOwnerControls } from '../../components/ReviewOwnerControls';
 
